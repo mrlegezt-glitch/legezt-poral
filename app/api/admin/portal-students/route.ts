@@ -30,17 +30,51 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ students, total: students.length });
 }
 
-// PATCH: Update student status (active/inactive/suspended)
+// PATCH: Update student fields or status
 export async function PATCH(req: NextRequest) {
   const isAdmin = getAdminSession(req);
   if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { studentId, status } = await req.json();
-  if (!studentId || !status) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const { studentId, status, fullName, username, email, enrollmentNo, year, branch } = await req.json();
+  if (!studentId) return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
+
+  const updateData: any = {};
+  if (status !== undefined) updateData.status = status;
+  if (fullName !== undefined) updateData.fullName = fullName;
+  if (username !== undefined) updateData.username = username;
+  if (email !== undefined) updateData.email = email;
+  if (enrollmentNo !== undefined) updateData.enrollmentNo = enrollmentNo;
+  if (year !== undefined) updateData.year = parseInt(year);
+  if (branch !== undefined) updateData.branch = branch;
 
   const updated = await prisma.portalStudent.update({
-    where: { id: studentId }, data: { status },
-    select: { id: true, status: true, fullName: true },
+    where: { id: studentId },
+    data: updateData,
+    select: {
+      id: true, fullName: true, username: true, email: true, enrollmentNo: true,
+      year: true, branch: true, status: true
+    },
   });
   return NextResponse.json({ student: updated });
+}
+
+// DELETE: Delete a portal student and all related data
+export async function DELETE(req: NextRequest) {
+  const isAdmin = getAdminSession(req);
+  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { studentId } = await req.json();
+  if (!studentId) return NextResponse.json({ error: "Missing studentId" }, { status: 400 });
+
+  await prisma.$transaction([
+    prisma.facultyStudentMap.deleteMany({ where: { studentId } }),
+    prisma.studentAnnouncement.deleteMany({ where: { studentId } }),
+    prisma.attendanceRecord.deleteMany({ where: { studentId } }),
+    prisma.assignmentSubmission.deleteMany({ where: { studentId } }),
+    prisma.portalMessage.deleteMany({ where: { OR: [{ senderStudentId: studentId }, { receiverStudentId: studentId }] } }),
+    prisma.portalDocument.deleteMany({ where: { uploaderStudentId: studentId } }),
+    prisma.portalStudent.delete({ where: { id: studentId } })
+  ]);
+
+  return NextResponse.json({ message: "Student deleted successfully" });
 }

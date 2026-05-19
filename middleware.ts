@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAccessToken } from "@/lib/auth";
+
+function getRedirectUrl(path: string, request: NextRequest) {
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "portal.mrlegezt.me";
+  return new URL(path, `${proto}://${host}`);
+}
  
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,19 +21,19 @@ export function middleware(request: NextRequest) {
   if (payload) {
     if (pathname === "/") {
       if (payload.role === "student") {
-        return NextResponse.redirect(new URL("/student/dashboard", request.url));
+        return NextResponse.redirect(getRedirectUrl("/student/dashboard", request));
       } else if (payload.role === "faculty") {
-        return NextResponse.redirect(new URL("/faculty/dashboard", request.url));
+        return NextResponse.redirect(getRedirectUrl("/faculty/dashboard", request));
       }
     }
     if (pathname === "/student/login" || pathname === "/student/register") {
       if (payload.role === "student") {
-        return NextResponse.redirect(new URL("/student/dashboard", request.url));
+        return NextResponse.redirect(getRedirectUrl("/student/dashboard", request));
       }
     }
     if (pathname === "/faculty/login" || pathname === "/faculty/register") {
       if (payload.role === "faculty") {
-        return NextResponse.redirect(new URL("/faculty/dashboard", request.url));
+        return NextResponse.redirect(getRedirectUrl("/faculty/dashboard", request));
       }
     }
   }
@@ -38,17 +44,17 @@ export function middleware(request: NextRequest) {
   if (isStudentRoute || isFacultyRoute) {
     if (!token || !payload) {
       const loginPath = isStudentRoute ? "/student/login" : "/faculty/login";
-      const response = NextResponse.redirect(new URL(loginPath, request.url));
+      const response = NextResponse.redirect(getRedirectUrl(loginPath, request));
       if (token) response.cookies.delete("portal_access_token");
       return response;
     }
  
     // Role guard
     if (isStudentRoute && payload.role !== "student") {
-      return NextResponse.redirect(new URL("/student/login", request.url));
+      return NextResponse.redirect(getRedirectUrl("/student/login", request));
     }
     if (isFacultyRoute && payload.role !== "faculty") {
-      return NextResponse.redirect(new URL("/faculty/login", request.url));
+      return NextResponse.redirect(getRedirectUrl("/faculty/login", request));
     }
   }
  
