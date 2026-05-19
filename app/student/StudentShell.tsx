@@ -34,7 +34,8 @@ export default function StudentShell({ children }: { children: React.ReactNode }
   return (
     <div className="portal-shell">
       <aside className="portal-sidebar student">
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <img src="/logo.png" alt="Portal Logo" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
           LIET PORTAL
         </div>
         <nav className="sidebar-nav">

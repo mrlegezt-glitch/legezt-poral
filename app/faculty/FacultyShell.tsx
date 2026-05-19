@@ -35,7 +35,10 @@ export default function FacultyShell({ children }: { children: React.ReactNode }
   return (
     <div className="portal-shell">
       <aside className="portal-sidebar faculty">
-        <div className="sidebar-logo">LIET FACULTY</div>
+        <div className="sidebar-logo" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <img src="/logo.png" alt="Portal Logo" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
+          LIET FACULTY
+        </div>
         <nav className="sidebar-nav">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active" : ""}`}>
