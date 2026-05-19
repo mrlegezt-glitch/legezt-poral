@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BRANCHES, DESIGNATIONS, COLLEGE_NAME } from "@/lib/constants";
@@ -9,6 +9,14 @@ export default function FacultyRegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [collegeName, setCollegeName] = useState(COLLEGE_NAME);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("selectedCollege");
+    if (stored) {
+      setCollegeName(stored);
+    }
+  }, []);
 
   function set(k: string, v: string) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -18,7 +26,7 @@ export default function FacultyRegisterPage() {
     try {
       const res = await fetch("/api/faculty/auth/register", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, collegeName }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
@@ -32,12 +40,12 @@ export default function FacultyRegisterPage() {
       <div className="auth-left faculty">
         <div style={{ maxWidth: 360, textAlign: "center" }}>
           <div className="auth-brand faculty">👨‍🏫 Faculty Portal</div>
-          <div style={{ color: "#94a3b8", marginTop: 8 }}>{COLLEGE_NAME}</div>
+          <div style={{ color: "#94a3b8", marginTop: 8 }}>{collegeName}</div>
         </div>
       </div>
       <div className="auth-right" style={{ overflowY: "auto" }}>
         <div className="auth-title">Faculty Registration</div>
-        <div className="auth-subtitle">Create your faculty account</div>
+        <div className="auth-subtitle">Create your faculty account — {collegeName}</div>
         {error && <div className="form-error" style={{ marginBottom: 16 }}>{error}</div>}
         {success && <div className="form-success" style={{ marginBottom: 16 }}>{success}</div>}
         {!success && (

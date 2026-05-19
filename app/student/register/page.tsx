@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BRANCHES, YEARS, COLLEGE_NAME } from "@/lib/constants";
@@ -10,6 +10,14 @@ export default function StudentRegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [collegeName, setCollegeName] = useState(COLLEGE_NAME);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("selectedCollege");
+    if (stored) {
+      setCollegeName(stored);
+    }
+  }, []);
 
   function set(k: string, v: string) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -20,7 +28,7 @@ export default function StudentRegisterPage() {
       const res = await fetch("/api/student/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, year: parseInt(form.year) }),
+        body: JSON.stringify({ ...form, year: parseInt(form.year), collegeName }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
@@ -34,7 +42,7 @@ export default function StudentRegisterPage() {
       <div className="auth-left student">
         <div style={{ maxWidth: 400, textAlign: "center" }}>
           <div className="auth-brand student">🎓 LIET Portal</div>
-          <div style={{ fontSize: "1rem", color: "#94a3b8", marginTop: 8 }}>{COLLEGE_NAME}</div>
+          <div style={{ fontSize: "1rem", color: "#94a3b8", marginTop: 8 }}>{collegeName}</div>
           <div style={{ marginTop: 40, background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", borderRadius: 12, padding: 20, textAlign: "left" }}>
             <div style={{ fontWeight: 600, marginBottom: 8 }}>📋 Registration Process</div>
             <ol style={{ color: "#94a3b8", fontSize: "0.875rem", lineHeight: 1.8, paddingLeft: 16 }}>
@@ -49,7 +57,7 @@ export default function StudentRegisterPage() {
       </div>
       <div className="auth-right" style={{ overflowY: "auto" }}>
         <div className="auth-title">Create Account</div>
-        <div className="auth-subtitle">Student registration — {COLLEGE_NAME}</div>
+        <div className="auth-subtitle">Student registration — {collegeName}</div>
         {error && <div className="form-error" style={{ marginBottom: 16 }}>{error}</div>}
         {success && <div className="form-success" style={{ marginBottom: 16 }}>{success}</div>}
         {!success && (

@@ -13,6 +13,7 @@ const registerSchema = z.object({
   designation: z.enum(DESIGNATIONS),
   department: z.enum(BRANCHES),
   bio: z.string().max(300).optional(),
+  collegeName: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(d.password, 12);
   const faculty = await prisma.portalFaculty.create({
-    data: { fullName: d.fullName, username: d.username, workEmail: d.workEmail, passwordHash, phone: d.phone, designation: d.designation, department: d.department, collegeName: COLLEGE_NAME, bio: d.bio, status: "pending" },
+    data: { fullName: d.fullName, username: d.username, workEmail: d.workEmail, passwordHash, phone: d.phone, designation: d.designation, department: d.department, collegeName: d.collegeName || COLLEGE_NAME, bio: d.bio, status: "pending" },
     select: { id: true, fullName: true, workEmail: true, username: true, status: true },
   });
 

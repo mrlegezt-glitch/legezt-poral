@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { COLLEGE_NAME } from "@/lib/constants";
 
 export default function StudentLoginPage() {
   const router = useRouter();
@@ -9,6 +10,14 @@ export default function StudentLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [collegeName, setCollegeName] = useState(COLLEGE_NAME);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("selectedCollege");
+    if (stored) {
+      setCollegeName(stored);
+    }
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -30,8 +39,8 @@ export default function StudentLoginPage() {
     <div className="auth-page">
       <div className="auth-left student">
         <div style={{ maxWidth: 400, textAlign: "center" }}>
-          <div className="auth-brand student">🎓 LIET Portal</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: 16, color: "#e2e8f0" }}>Student Academic Portal</div>
+          <div className="auth-brand student">🎓 Portal</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: 16, color: "#e2e8f0" }}>{collegeName}</div>
           <p className="auth-tagline">Access your assignments, messages, documents, and academic progress — all in one place.</p>
           <div style={{ marginTop: 48, display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
             {["📚 View assignments & notes from faculty", "💬 Message your faculty directly", "📂 Download shared documents", "📊 Track attendance & grades"].map((item) => (

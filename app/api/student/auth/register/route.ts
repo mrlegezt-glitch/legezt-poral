@@ -14,6 +14,7 @@ const registerSchema = z.object({
   year: z.number().int().min(1).max(4),
   branch: z.enum(BRANCHES),
   bio: z.string().max(300).optional(),
+  collegeName: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     data: {
       fullName: d.fullName, username: d.username, email: d.email, passwordHash,
       phone: d.phone, enrollmentNo: d.enrollmentNo, year: d.year,
-      branch: d.branch, collegeName: COLLEGE_NAME, bio: d.bio,
+      branch: d.branch, collegeName: d.collegeName || COLLEGE_NAME, bio: d.bio,
       status: "pending",
     },
     select: { id: true, fullName: true, email: true, username: true, status: true },

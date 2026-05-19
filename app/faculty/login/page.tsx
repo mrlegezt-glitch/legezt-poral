@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { COLLEGE_NAME } from "@/lib/constants";
 
 export default function FacultyLoginPage() {
   const router = useRouter();
@@ -9,6 +10,14 @@ export default function FacultyLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [collegeName, setCollegeName] = useState(COLLEGE_NAME);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("selectedCollege");
+    if (stored) {
+      setCollegeName(stored);
+    }
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +40,7 @@ export default function FacultyLoginPage() {
       <div className="auth-left faculty">
         <div style={{ maxWidth: 400, textAlign: "center" }}>
           <div className="auth-brand faculty">👨‍🏫 Faculty Portal</div>
-          <div style={{ fontSize: "1rem", color: "#94a3b8", marginTop: 8 }}>Lords Institute of Engineering and Technology</div>
+          <div style={{ fontSize: "1rem", color: "#94a3b8", marginTop: 8 }}>{collegeName}</div>
           <div style={{ marginTop: 48, display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
             {["👥 Monitor assigned students", "📢 Post announcements", "📋 Mark attendance", "📝 Share assignments & notes", "💬 Communicate with students"].map((item) => (
               <div key={item} style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{item}</div>
