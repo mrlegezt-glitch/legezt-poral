@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
-const ACCESS_SECRET = process.env.JWT_SECRET!;
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+const ACCESS_SECRET = process.env.JWT_SECRET || "LeGeZt_Portal_JWT_Super_Secret_2025_X9mK!@#v3rYs3cur3";
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "LeGeZt_Refresh_Token_Secret_X9mKv3ryS3cur3!@#2025";
 const ACCESS_EXPIRY = "30d";
 const REFRESH_EXPIRY = "90d";
 
