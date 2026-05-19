@@ -89,9 +89,9 @@ export default function PortalLandingPage() {
                 e.currentTarget.style.boxShadow = "0 4px 30px rgba(0, 0, 0, 0.2)";
               }}
             >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", background: `radial-gradient(circle at 10% 10%, rgba(${c.color}, 0.08), transparent 50%)`, zIndex: 0 }} />
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", background: `radial-gradient(circle at 10% 10%, rgba(${c.color}, 0.08), transparent 50%)`, zIndex: 0, pointerEvents: "none" }} />
               
-              <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ position: "relative", zIndex: 1, pointerEvents: "none" }}>
                 <div style={{ fontSize: "3rem", marginBottom: "24px", display: "inline-block" }}>{c.icon}</div>
                 <div style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "10px", letterSpacing: "-0.5px" }}>{c.shortName}</div>
                 <div style={{ fontSize: "0.95rem", color: "#94a3b8", lineHeight: 1.6 }}>{c.name}</div>
@@ -119,7 +119,7 @@ export default function PortalLandingPage() {
 
       <div className="portal-cards" style={{ position: "relative", zIndex: 1 }}>
         {/* Student Card */}
-        <Link 
+        <a 
           href="/student/login" 
           className="portal-card student"
           style={{
@@ -150,9 +150,9 @@ export default function PortalLandingPage() {
             e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.15)";
           }}
         >
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", background: "radial-gradient(circle at 50% 10%, rgba(14, 165, 233, 0.08), transparent 60%)" }} />
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", background: "radial-gradient(circle at 50% 10%, rgba(14, 165, 233, 0.08), transparent 60%)", pointerEvents: "none" }} />
           
-          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-between" }}>
+          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-between", pointerEvents: "none" }}>
             <div>
               <div className="portal-card-icon" style={{ fontSize: "3.5rem", marginBottom: "24px", textAlign: "center" }}>👨‍🎓</div>
               <h3 className="portal-card-title" style={{ fontFamily: "var(--font-display)", fontSize: "1.6rem", fontWeight: 700, color: "var(--student-primary)", marginBottom: "12px", textAlign: "center" }}>Student Hub</h3>
@@ -164,10 +164,10 @@ export default function PortalLandingPage() {
               Enter Student Portal
             </span>
           </div>
-        </Link>
+        </a>
 
         {/* Faculty Card */}
-        <Link 
+        <a 
           href="/faculty/login" 
           className="portal-card faculty"
           style={{
@@ -198,9 +198,9 @@ export default function PortalLandingPage() {
             e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.15)";
           }}
         >
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", background: "radial-gradient(circle at 50% 10%, rgba(16, 185, 129, 0.08), transparent 60%)" }} />
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100%", background: "radial-gradient(circle at 50% 10%, rgba(16, 185, 129, 0.08), transparent 60%)", pointerEvents: "none" }} />
           
-          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-between" }}>
+          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "space-between", pointerEvents: "none" }}>
             <div>
               <div className="portal-card-icon" style={{ fontSize: "3.5rem", marginBottom: "24px", textAlign: "center" }}>👨‍🏫</div>
               <h3 className="portal-card-title" style={{ fontFamily: "var(--font-display)", fontSize: "1.6rem", fontWeight: 700, color: "var(--faculty-primary)", marginBottom: "12px", textAlign: "center" }}>Faculty Hub</h3>
@@ -212,7 +212,7 @@ export default function PortalLandingPage() {
               Enter Faculty Portal
             </span>
           </div>
-        </Link>
+        </a>
       </div>
 
       <div style={{ marginTop: "50px", textAlign: "center", position: "relative", zIndex: 1 }}>
