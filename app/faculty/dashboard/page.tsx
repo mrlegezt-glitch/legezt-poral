@@ -20,28 +20,28 @@ export default function FacultyDashboard() {
   return (
     <div className="portal-main">
       <div className="portal-topbar">
-        <div className="portal-topbar-title">👋 Welcome, {faculty.fullName.split(" ")[0]}!</div>
-        <div style={{ fontSize: "0.8rem", color: "#64748b" }}>{faculty.designation} · {faculty.department}</div>
+        <div className="portal-topbar-title">Welcome, {faculty.fullName.split(" ")[0]}!</div>
+        <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{faculty.designation} · {faculty.department}</div>
       </div>
       <div className="portal-content">
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-label">Assigned Students</div>
-            <div className="stat-value faculty">{faculty.studentCount}</div>
+            <div className="stat-value">{faculty.studentCount}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Active</div>
-            <div className="stat-value faculty">{students.filter((s) => s.status === "active").length}</div>
+            <div className="stat-value">{students.filter((s) => s.status === "active").length}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Branches</div>
-            <div className="stat-value faculty" style={{ fontSize: "1.3rem" }}>{Object.keys(byBranch).join(", ") || "—"}</div>
+            <div className="stat-value" style={{ fontSize: "1.3rem" }}>{Object.keys(byBranch).join(", ") || "—"}</div>
           </div>
         </div>
 
-        <div className="section-title">👥 Your Students</div>
+        <div className="section-title">Your Students</div>
         {students.length === 0 ? (
-          <div className="empty-state"><div className="empty-icon">👥</div><div>No students assigned yet. Admin will assign students.</div></div>
+          <div className="empty-state">No students assigned yet. Admin will assign students.</div>
         ) : (
           <div className="data-table-wrap">
             <table className="data-table">

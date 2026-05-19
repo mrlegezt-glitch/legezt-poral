@@ -18,14 +18,14 @@ export default function StudentDashboard() {
   return (
     <div className="portal-main">
       <div className="portal-topbar">
-        <div className="portal-topbar-title">👋 Welcome, {student.fullName.split(" ")[0]}!</div>
-        <div style={{ fontSize: "0.8rem", color: "#64748b" }}>{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
+        <div className="portal-topbar-title">Welcome, {student.fullName.split(" ")[0]}!</div>
+        <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
       </div>
       <div className="portal-content">
         {/* Status Banner */}
         {student.status === "pending" && (
-          <div style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: 12, padding: "16px 20px", marginBottom: 24, color: "#fde68a" }}>
-            ⏳ Your account is pending admin approval. Some features may be limited.
+          <div className="form-error" style={{ marginBottom: 24 }}>
+            Your account is pending admin approval. Some features may be limited.
           </div>
         )}
 
@@ -33,33 +33,33 @@ export default function StudentDashboard() {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-label">Year</div>
-            <div className="stat-value student">Year {student.year}</div>
+            <div className="stat-value">Year {student.year}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Branch</div>
-            <div className="stat-value student" style={{ fontSize: "1.4rem" }}>{student.branch}</div>
+            <div className="stat-value" style={{ fontSize: "1.4rem" }}>{student.branch}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Enrollment</div>
-            <div className="stat-value student" style={{ fontSize: "1.2rem" }}>{student.enrollmentNo}</div>
+            <div className="stat-value" style={{ fontSize: "1.2rem" }}>{student.enrollmentNo}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Faculty Assigned</div>
-            <div className="stat-value student" style={{ fontSize: "1.4rem" }}>{student.assignedFacultyId ? "✅" : "⏳"}</div>
+            <div className="stat-value" style={{ fontSize: "1.2rem" }}>{student.assignedFacultyId ? "Assigned" : "Pending"}</div>
           </div>
         </div>
 
         {/* Announcements */}
-        <div className="section-title">📢 Latest Announcements</div>
+        <div className="section-title">Latest Announcements</div>
         {announcements.length === 0 ? (
-          <div className="empty-state"><div className="empty-icon">📭</div><div>No announcements yet</div></div>
+          <div className="empty-state">No announcements yet</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {announcements.slice(0, 5).map((a) => (
-              <div key={a.id} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "16px 20px" }}>
+              <div key={a.id} style={{ background: "var(--bg-panel)", border: "1px solid var(--border-muted)", borderRadius: 8, padding: "16px 20px" }}>
                 <div style={{ fontWeight: 600, marginBottom: 6 }}>{a.title}</div>
-                <div style={{ color: "#94a3b8", fontSize: "0.875rem", lineHeight: 1.6 }}>{a.content}</div>
-                <div style={{ color: "#475569", fontSize: "0.75rem", marginTop: 8 }}>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.875rem", lineHeight: 1.6 }}>{a.content}</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: 8 }}>
                   {new Date(a.createdAt).toLocaleDateString("en-IN")}
                 </div>
               </div>

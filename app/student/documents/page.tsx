@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 type Doc = { id: string; title: string; fileName: string; fileSize: number; category?: string; branch?: string; year?: number; downloadUrl: string; createdAt: string; };
 
 function fileIcon(name: string) {
-  if (name.endsWith(".pdf")) return "📄";
-  if (name.match(/\.(doc|docx)$/)) return "📝";
-  if (name.match(/\.(xls|xlsx)$/)) return "📊";
-  if (name.match(/\.(png|jpg|jpeg|webp)$/)) return "🖼️";
-  return "📎";
+  if (name.endsWith(".pdf")) return "PDF";
+  if (name.match(/\.(doc|docx)$/)) return "DOC";
+  if (name.match(/\.(xls|xlsx)$/)) return "XLS";
+  if (name.match(/\.(png|jpg|jpeg|webp)$/)) return "IMG";
+  return "FILE";
 }
 
 export default function StudentDocumentsPage() {
@@ -26,21 +26,21 @@ export default function StudentDocumentsPage() {
   return (
     <div className="portal-main">
       <div className="portal-topbar">
-        <div className="portal-topbar-title">📂 Documents</div>
+        <div className="portal-topbar-title">Documents</div>
         <div style={{ display: "flex", gap: 8 }}>
           {categories.map((c) => (
-            <button key={c} onClick={() => setFilter(c)} className="btn-sm" style={{ background: filter === c ? "var(--student-primary)" : "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer" }}>{c}</button>
+            <button key={c} onClick={() => setFilter(c)} className={`btn-sm ${filter === c ? "active" : ""}`}>{c}</button>
           ))}
         </div>
       </div>
       <div className="portal-content">
         {loading ? <div className="spinner" /> : filtered.length === 0 ? (
-          <div className="empty-state"><div className="empty-icon">📂</div><div>No documents shared yet</div></div>
+          <div className="empty-state">No documents shared yet</div>
         ) : (
           <div className="doc-grid">
             {filtered.map((d) => (
               <a key={d.id} href={d.downloadUrl} target="_blank" rel="noopener" className="doc-card">
-                <div className="doc-icon">{fileIcon(d.fileName)}</div>
+                <div className="doc-icon" style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", letterSpacing: "1px" }}>{fileIcon(d.fileName)}</div>
                 <div className="doc-title">{d.title}</div>
                 <div className="doc-meta">{d.category ?? "Other"} · {(d.fileSize / 1024).toFixed(0)} KB</div>
                 {d.year && <div className="doc-meta">Year {d.year} · {d.branch}</div>}

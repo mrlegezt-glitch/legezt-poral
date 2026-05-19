@@ -6,10 +6,10 @@ import { useRouter, usePathname } from "next/navigation";
 type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; enrollmentNo: string; collegeName: string; profilePhotoUrl?: string; status: string; };
 
 const navItems = [
-  { href: "/student/dashboard", icon: "🏠", label: "Dashboard" },
-  { href: "/student/messages", icon: "💬", label: "Messages" },
-  { href: "/student/documents", icon: "📂", label: "Documents" },
-  { href: "/student/profile", icon: "👤", label: "Profile" },
+  { href: "/student/dashboard", label: "Dashboard" },
+  { href: "/student/messages", label: "Messages" },
+  { href: "/student/documents", label: "Documents" },
+  { href: "/student/profile", label: "Profile" },
 ];
 
 export default function StudentShell({ children }: { children: React.ReactNode }) {
@@ -35,19 +35,18 @@ export default function StudentShell({ children }: { children: React.ReactNode }
     <div className="portal-shell">
       <aside className="portal-sidebar student">
         <div className="sidebar-logo">
-          <span className="student">🎓</span> LIET
+          LIET PORTAL
         </div>
         <nav className="sidebar-nav">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active student" : ""}`}>
-              <span style={{ fontSize: "1.1rem" }}>{item.icon}</span>
+            <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active" : ""}`}>
               {item.label}
             </Link>
           ))}
         </nav>
         <div className="sidebar-user">
           <div className="sidebar-user-info">
-            <div className="sidebar-avatar" style={{ background: "#0ea5e9", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="sidebar-avatar">
               {student.fullName.charAt(0)}
             </div>
             <div>
@@ -55,7 +54,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
               <div className="sidebar-role">Year {student.year} · {student.branch}</div>
             </div>
           </div>
-          <button onClick={logout} style={{ marginTop: 12, width: "100%", padding: "8px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, color: "#fca5a5", fontSize: "0.8rem", cursor: "pointer" }}>
+          <button onClick={logout} className="btn-outline" style={{ marginTop: 12, width: "100%", padding: "8px", borderRadius: 6, fontSize: "0.8rem", cursor: "pointer" }}>
             Sign Out
           </button>
         </div>

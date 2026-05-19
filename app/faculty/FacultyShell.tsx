@@ -6,11 +6,11 @@ import { useRouter, usePathname } from "next/navigation";
 type Faculty = { id: string; fullName: string; username: string; workEmail: string; designation: string; department: string; profilePhotoUrl?: string; studentCount?: number; };
 
 const navItems = [
-  { href: "/faculty/dashboard", icon: "🏠", label: "Dashboard" },
-  { href: "/faculty/students", icon: "👥", label: "My Students" },
-  { href: "/faculty/messages", icon: "💬", label: "Messages" },
-  { href: "/faculty/documents", icon: "📂", label: "Documents" },
-  { href: "/faculty/profile", icon: "👤", label: "Profile" },
+  { href: "/faculty/dashboard", label: "Dashboard" },
+  { href: "/faculty/students", label: "My Students" },
+  { href: "/faculty/messages", label: "Messages" },
+  { href: "/faculty/documents", label: "Documents" },
+  { href: "/faculty/profile", label: "Profile" },
 ];
 
 export default function FacultyShell({ children }: { children: React.ReactNode }) {
@@ -35,11 +35,10 @@ export default function FacultyShell({ children }: { children: React.ReactNode }
   return (
     <div className="portal-shell">
       <aside className="portal-sidebar faculty">
-        <div className="sidebar-logo"><span className="faculty">👨‍🏫</span> LIET</div>
+        <div className="sidebar-logo">LIET FACULTY</div>
         <nav className="sidebar-nav">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active faculty" : ""}`}>
-              <span style={{ fontSize: "1.1rem" }}>{item.icon}</span>
+            <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active" : ""}`}>
               {item.label}
               {item.label === "My Students" && faculty.studentCount ? (
                 <span className="sidebar-badge">{faculty.studentCount}</span>
@@ -49,7 +48,7 @@ export default function FacultyShell({ children }: { children: React.ReactNode }
         </nav>
         <div className="sidebar-user">
           <div className="sidebar-user-info">
-            <div className="sidebar-avatar" style={{ background: "#10b981", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="sidebar-avatar">
               {faculty.fullName.charAt(0)}
             </div>
             <div>
@@ -57,7 +56,7 @@ export default function FacultyShell({ children }: { children: React.ReactNode }
               <div className="sidebar-role">{faculty.designation}</div>
             </div>
           </div>
-          <button onClick={logout} style={{ marginTop: 12, width: "100%", padding: "8px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, color: "#fca5a5", fontSize: "0.8rem", cursor: "pointer" }}>
+          <button onClick={logout} className="btn-outline" style={{ marginTop: 12, width: "100%", padding: "8px", borderRadius: 6, fontSize: "0.8rem", cursor: "pointer" }}>
             Sign Out
           </button>
         </div>
