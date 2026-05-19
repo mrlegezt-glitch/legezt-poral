@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 
 const ACCESS_SECRET = process.env.JWT_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
-const ACCESS_EXPIRY = "15m";
-const REFRESH_EXPIRY = "7d";
+const ACCESS_EXPIRY = "30d";
+const REFRESH_EXPIRY = "90d";
 
 export type TokenPayload = {
   userId: string;

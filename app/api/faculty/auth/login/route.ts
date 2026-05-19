@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const res = NextResponse.json({
     user: { id: faculty.id, username: faculty.username, fullName: faculty.fullName, email: faculty.workEmail, designation: faculty.designation, department: faculty.department, profilePhotoUrl: faculty.profilePhotoUrl },
   });
-  res.cookies.set("portal_access_token", accessToken, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 900 });
-  res.cookies.set("portal_refresh_token", refreshToken, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 604800, path: "/api/faculty/auth/refresh" });
+  res.cookies.set("portal_access_token", accessToken, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 30 * 24 * 60 * 60 });
+  res.cookies.set("portal_refresh_token", refreshToken, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 90 * 24 * 60 * 60, path: "/api/faculty/auth/refresh" });
   return res;
 }

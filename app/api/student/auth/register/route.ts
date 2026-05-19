@@ -41,10 +41,10 @@ export async function POST(req: NextRequest) {
       fullName: d.fullName, username: d.username, email: d.email, passwordHash,
       phone: d.phone, enrollmentNo: d.enrollmentNo, year: d.year,
       branch: d.branch, collegeName: d.collegeName || COLLEGE_NAME, bio: d.bio,
-      status: "pending",
+      status: "approved",
     },
     select: { id: true, fullName: true, email: true, username: true, status: true },
   });
 
-  return NextResponse.json({ message: "Registration successful. Awaiting admin approval.", student }, { status: 201 });
+  return NextResponse.json({ message: "Registration successful.", student }, { status: 201 });
 }
