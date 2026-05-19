@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
   if (!student || !(await bcrypt.compare(password, student.passwordHash))) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
-  if (student.status === "pending") return NextResponse.json({ error: "Account pending admin approval" }, { status: 403 });
+  if (student.status === "email_unverified") return NextResponse.json({ error: "Please verify your email address. Check your inbox and spam folder." }, { status: 403 });
+  if (student.status === "pending") return NextResponse.json({ error: "Your account is pending admin approval. Please check back later." }, { status: 403 });
   if (student.status === "suspended") return NextResponse.json({ error: "Account suspended. Contact admin." }, { status: 403 });
 
   resetRateLimit(ip);

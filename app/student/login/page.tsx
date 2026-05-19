@@ -9,6 +9,7 @@ export default function StudentLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [collegeName, setCollegeName] = useState(COLLEGE_NAME);
 
@@ -16,6 +17,20 @@ export default function StudentLoginPage() {
     const stored = localStorage.getItem("selectedCollege");
     if (stored) {
       setCollegeName(stored);
+    }
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const success = params.get("success");
+      const err = params.get("error");
+      if (success === "email_verified") {
+        setSuccessMsg("Email verified successfully! You can now log in.");
+      }
+      if (err === "invalid_token") {
+        setError("Invalid or expired verification token.");
+      } else if (err === "token_expired") {
+        setError("Verification link has expired. Please register again.");
+      }
     }
   }, []);
 
@@ -53,6 +68,7 @@ export default function StudentLoginPage() {
         <div className="auth-title">Welcome back 👋</div>
         <div className="auth-subtitle">Sign in to your student account</div>
         {error && <div className="form-error" style={{ marginBottom: 16 }}>{error}</div>}
+        {successMsg && <div className="form-success" style={{ marginBottom: 16 }}>{successMsg}</div>}
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
             <label className="form-label">Email Address</label>

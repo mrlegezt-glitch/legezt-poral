@@ -32,7 +32,7 @@ export default function StudentRegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
-      setSuccess("Registration submitted! Awaiting admin approval. You'll be able to login once approved.");
+      setSuccess(data.message);
     } catch { setError("Network error. Try again."); }
     finally { setLoading(false); }
   }
@@ -44,14 +44,11 @@ export default function StudentRegisterPage() {
           <div className="auth-brand student">🎓 LIET Portal</div>
           <div style={{ fontSize: "1rem", color: "#94a3b8", marginTop: 8 }}>{collegeName}</div>
           <div style={{ marginTop: 40, background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", borderRadius: 12, padding: 20, textAlign: "left" }}>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>📋 Registration Process</div>
-            <ol style={{ color: "#94a3b8", fontSize: "0.875rem", lineHeight: 1.8, paddingLeft: 16 }}>
-              <li>Fill in your details</li>
-              <li>Submit registration</li>
-              <li>Admin verifies & approves</li>
-              <li>Faculty gets assigned to you</li>
-              <li>Login and access your workspace</li>
-            </ol>
+            <div style={{ fontWeight: 600, marginBottom: 8, color: "#e2e8f0" }}>📋 Registration Guidelines</div>
+            <ul style={{ color: "#94a3b8", fontSize: "0.85rem", lineHeight: 1.6, paddingLeft: 16, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+              <li><strong>College Email:</strong> Register with your official email ending in <code>@lords.ac.in</code> to receive an instant verification link. Be sure to check your <strong>spam folder</strong>! (From info@mrlegezt.me)</li>
+              <li><strong>Personal Email:</strong> If you use Gmail/Yahoo, you must enter your Roll Number. Your account will require manual approval by the Admin or Faculty.</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -75,6 +72,9 @@ export default function StudentRegisterPage() {
             <div className="form-group">
               <label className="form-label">Email Address</label>
               <input className="form-input student" type="email" placeholder="your@email.com" value={form.email} onChange={(e) => set("email", e.target.value)} required />
+              <span style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4, display: "block" }}>
+                Use your <strong>@lords.ac.in</strong> email for instant auto-verification.
+              </span>
             </div>
             <div className="form-group">
               <label className="form-label">Password (min 8 chars)</label>

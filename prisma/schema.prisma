@@ -23,6 +23,8 @@ model PortalStudent {
   bio             String?
   googleId        String?
   status          String   @default("pending")
+  verificationToken String?
+  verificationTokenExpires DateTime?
   assignedFacultyId String?
   lastLoginAt     DateTime?
   loginAttempts   Int      @default(0)

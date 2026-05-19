@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { COLLEGE_NAME, BRANCHES, YEARS } from "@/lib/constants";
+import { sendVerificationEmail } from "@/lib/mail";
 
 const registerSchema = z.object({
   fullName: z.string().min(2).max(100),
@@ -36,15 +38,42 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(d.password, 12);
 
+  const isCollegeEmail = d.email.toLowerCase().endsWith("@lords.ac.in");
+  const status = isCollegeEmail ? "email_unverified" : "pending";
+  const verificationToken = isCollegeEmail ? crypto.randomUUID() : null;
+  const verificationTokenExpires = isCollegeEmail ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
+
   const student = await prisma.portalStudent.create({
     data: {
-      fullName: d.fullName, username: d.username, email: d.email, passwordHash,
-      phone: d.phone, enrollmentNo: d.enrollmentNo, year: d.year,
-      branch: d.branch, collegeName: d.collegeName || COLLEGE_NAME, bio: d.bio,
-      status: "approved",
+      fullName: d.fullName,
+      username: d.username,
+      email: d.email,
+      passwordHash,
+      phone: d.phone,
+      enrollmentNo: d.enrollmentNo,
+      year: d.year,
+      branch: d.branch,
+      collegeName: d.collegeName || COLLEGE_NAME,
+      bio: d.bio,
+      status,
+      verificationToken,
+      verificationTokenExpires,
     },
     select: { id: true, fullName: true, email: true, username: true, status: true },
   });
 
-  return NextResponse.json({ message: "Registration successful.", student }, { status: 201 });
+  if (isCollegeEmail && verificationToken) {
+    try {
+      await sendVerificationEmail(d.email, verificationToken, d.fullName);
+    } catch (err) {
+      console.error("Failed to send verification email:", err);
+      // We don't fail registration, but we log the error
+    }
+  }
+
+  const message = isCollegeEmail
+    ? "Registration successful. A verification link has been sent to your email. Please check your inbox and spam folder."
+    : "Registration successful. Your account is pending admin approval.";
+
+  return NextResponse.json({ message, student }, { status: 201 });
 }
