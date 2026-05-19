@@ -7,14 +7,14 @@ function getRedirectUrl(path: string, request: NextRequest) {
   return new URL(path, `${proto}://${host}`);
 }
  
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
  
   // Check if user is already authenticated
   const token = request.cookies.get("portal_access_token")?.value;
   let payload = null;
   if (token) {
-    payload = verifyAccessToken(token);
+    payload = await verifyAccessToken(token);
   }
  
   // Auto-redirect if trying to access landing page "/" or auth pages when already logged in

@@ -3,19 +3,19 @@ import { verifyAccessToken } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { computeMatchScore } from "@/lib/constants";
 
-function getAdminSession(req: NextRequest) {
+async function getAdminSession(req: NextRequest) {
   const apiKey = req.headers.get("x-admin-api-key");
   if (apiKey === process.env.ADMIN_API_KEY) return true;
   const token = req.cookies.get("__session")?.value;
   if (token) {
-    try { const p = verifyAccessToken(token); return !!p; } catch { return false; }
+    try { const p = await verifyAccessToken(token); return !!p; } catch { return false; }
   }
   return false;
 }
 
 // GET: List all portal students
 export async function GET(req: NextRequest) {
-  const isAdmin = getAdminSession(req);
+  const isAdmin = await getAdminSession(req);
   if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const students = await prisma.portalStudent.findMany({
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
 // PATCH: Update student fields or status
 export async function PATCH(req: NextRequest) {
-  const isAdmin = getAdminSession(req);
+  const isAdmin = await getAdminSession(req);
   if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { studentId, status, fullName, username, email, enrollmentNo, year, branch } = await req.json();
@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE: Delete a portal student and all related data
 export async function DELETE(req: NextRequest) {
-  const isAdmin = getAdminSession(req);
+  const isAdmin = await getAdminSession(req);
   if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { studentId } = await req.json();
