@@ -5,8 +5,12 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get("token");
 
+  const proto = req.headers.get("x-forwarded-proto") || "https";
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "portal.mrlegezt.me";
+  const baseUrl = `${proto}://${host}`;
+
   if (!token) {
-    return NextResponse.redirect(new URL("/student/login?error=invalid_token", req.url));
+    return NextResponse.redirect(new URL("/student/login?error=invalid_token", baseUrl));
   }
 
   // Find student with matching token and unexpired
@@ -20,7 +24,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!student) {
-    return NextResponse.redirect(new URL("/student/login?error=token_expired", req.url));
+    return NextResponse.redirect(new URL("/student/login?error=token_expired", baseUrl));
   }
 
   // Update status to approved and clear token
@@ -33,5 +37,5 @@ export async function GET(req: NextRequest) {
     }
   });
 
-  return NextResponse.redirect(new URL("/student/login?success=email_verified", req.url));
+  return NextResponse.redirect(new URL("/student/login?success=email_verified", baseUrl));
 }
