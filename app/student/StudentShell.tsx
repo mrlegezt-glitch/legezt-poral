@@ -14,6 +14,7 @@ const navItems = [
 
 export default function StudentShell({ children }: { children: React.ReactNode }) {
   const [student, setStudent] = useState<Student | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -33,14 +34,15 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
   return (
     <div className="portal-shell">
-      <aside className="portal-sidebar student">
+      {mobileOpen && <div className="portal-mobile-overlay" onClick={() => setMobileOpen(false)} />}
+      <aside className={`portal-sidebar student ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <img src="/logo.png" alt="Portal Logo" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
           LIET PORTAL
         </div>
         <nav className="sidebar-nav">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active" : ""}`}>
+            <Link key={item.href} href={item.href} className={`sidebar-item ${pathname === item.href ? "active" : ""}`} onClick={() => setMobileOpen(false)}>
               {item.label}
             </Link>
           ))}
@@ -60,7 +62,21 @@ export default function StudentShell({ children }: { children: React.ReactNode }
           </button>
         </div>
       </aside>
-      <main className="portal-main">{children}</main>
+      <main className="portal-main">
+        <div className="portal-mobile-toggle-header" style={{ display: "flex", alignItems: "center", padding: "16px 20px", background: "var(--bg-panel)", borderBottom: "1px solid var(--border-muted)" }}>
+          <button onClick={() => setMobileOpen(true)} className="portal-mobile-toggle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: "bold", letterSpacing: "1px" }}>LIET PORTAL</div>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+          {children}
+        </div>
+      </main>
     </div>
   );
 }
