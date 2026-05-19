@@ -1,17 +1,36 @@
 import { BlobServiceClient, generateBlobSASQueryParameters, BlobSASPermissions, StorageSharedKeyCredential } from "@azure/storage-blob";
 
-const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING!;
-const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME!;
+const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME || "";
 const containerName = process.env.AZURE_STORAGE_CONTAINER || "portal-files";
 
 // Extract account key from connection string
 function getAccountKey(): string {
+  if (!connectionString) return "";
   const match = connectionString.match(/AccountKey=([^;]+)/);
   return match ? match[1] : "";
 }
 
-export const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-export const containerClient = blobServiceClient.getContainerClient(containerName);
+// Lazy initialization of Clients
+let _blobServiceClient: any = null;
+let _containerClient: any = null;
+
+function getBlobServiceClient() {
+  if (!_blobServiceClient && connectionString) {
+    _blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+  }
+  return _blobServiceClient;
+}
+
+function getContainerClient() {
+  if (!_containerClient) {
+    const srv = getBlobServiceClient();
+    if (srv) {
+      _containerClient = srv.getContainerClient(containerName);
+    }
+  }
+  return _containerClient;
+}
 
 /**
  * Upload a file buffer to Azure Blob Storage
@@ -23,14 +42,17 @@ export async function uploadToBlob(
   folder: "profiles" | "documents" | "messages" | "assignments",
   mimeType: string
 ): Promise<string> {
+  const container = getContainerClient();
+  if (!container) throw new Error("Azure storage is not configured");
+
   const blobName = `${folder}/${Date.now()}-${fileName.replace(/\s+/g, "_")}`;
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const blockBlobClient = container.getBlockBlobClient(blobName);
 
   await blockBlobClient.uploadData(buffer, {
     blobHTTPHeaders: { blobContentType: mimeType },
   });
 
-  return blobName; // Store relative path, generate SAS URLs on demand
+  return blobName;
 }
 
 /**
@@ -39,6 +61,9 @@ export async function uploadToBlob(
  */
 export function generateSasUrl(blobName: string, expiryMinutes = 60): string {
   const accountKey = getAccountKey();
+  if (!accountKey || !accountName) {
+    return ""; // Silent fallback during build/CI environment
+  }
   const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
 
   const expiresOn = new Date();
@@ -61,6 +86,9 @@ export function generateSasUrl(blobName: string, expiryMinutes = 60): string {
  * Delete a blob from Azure Storage
  */
 export async function deleteBlob(blobName: string): Promise<void> {
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const container = getContainerClient();
+  if (!container) return; // Silent skip during build/CI environment
+
+  const blockBlobClient = container.getBlockBlobClient(blobName);
   await blockBlobClient.deleteIfExists();
 }
