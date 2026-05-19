@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─── PORTAL STUDENT ────────────────────────────────────────────────────────────
+model PortalStudent {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  username        String   @unique
+  fullName        String
+  email           String   @unique
+  passwordHash    String
+  phone           String?
+  enrollmentNo    String   @unique
+  year            Int
+  branch          String
+  collegeName     String   @default("Lords Institute of Engineering and Technology")
+  profilePhotoUrl String?
+  bio             String?
+  googleId        String?
+  status          String   @default("pending")
+  assignedFacultyId String?
+  lastLoginAt     DateTime?
+  loginAttempts   Int      @default(0)
+  lockedUntil     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sentMessages     PortalMessage[]      @relation("StudentSentMessages")
+  documents        PortalDocument[]     @relation("StudentDocuments")
+  mappings         FacultyStudentMap[]
+  announcements    StudentAnnouncement[]
+  attendance       AttendanceRecord[]
+  submissions      AssignmentSubmission[]
+}
+
+// ─── PORTAL FACULTY ────────────────────────────────────────────────────────────
+model PortalFaculty {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  username        String   @unique
+  fullName        String
+  workEmail       String   @unique
+  passwordHash    String
+  phone           String?
+  designation     String
+  department      String
+  collegeName     String   @default("Lords Institute of Engineering and Technology")
+  profilePhotoUrl String?
+  bio             String?
+  googleId        String?
+  status          String   @default("pending")
+  lastLoginAt     DateTime?
+  loginAttempts   Int      @default(0)
+  lockedUntil     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sentMessages     PortalMessage[]      @relation("FacultySentMessages")
+  documents        PortalDocument[]     @relation("FacultyDocuments")
+  mappings         FacultyStudentMap[]
+  announcements    Announcement[]
+  attendanceMarked AttendanceRecord[]
+  assignments      Assignment[]
+}
+
+// ─── FACULTY ↔ STUDENT MAPPING ─────────────────────────────────────────────────
+model FacultyStudentMap {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  facultyId   String   @db.ObjectId
+  studentId   String   @db.ObjectId
+  adminNote   String?
+  assignedBy  String
+  isActive    Boolean  @default(true)
+  assignedAt  DateTime @default(now())
+
+  faculty  PortalFaculty  @relation(fields: [facultyId], references: [id])
+  student  PortalStudent  @relation(fields: [studentId], references: [id])
+
+  @@unique([facultyId, studentId])
+}
+
+// ─── MESSAGES ─────────────────────────────────────────────────────────────────
+model PortalMessage {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  content        String
+  isRead         Boolean  @default(false)
+  attachmentUrl  String?
+  attachmentName String?
+
+  senderStudentId  String? @db.ObjectId
+  senderFacultyId  String? @db.ObjectId
+  receiverStudentId  String? @db.ObjectId
+  receiverFacultyId  String? @db.ObjectId
+
+  createdAt  DateTime @default(now())
+
+  senderStudent   PortalStudent? @relation("StudentSentMessages", fields: [senderStudentId], references: [id])
+  senderFaculty   PortalFaculty? @relation("FacultySentMessages", fields: [senderFacultyId], references: [id])
+}
+
+// ─── DOCUMENTS ────────────────────────────────────────────────────────────────
+model PortalDocument {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String?
+  fileUrl       String
+  fileName      String
+  fileSize      Int
+  mimeType      String
+  category      String?
+  year          Int?
+  branch        String?
+  collegeName   String?
+  isPublic      Boolean  @default(false)
+  sharedWith    String[]
+  uploaderStudentId  String? @db.ObjectId
+  uploaderFacultyId  String? @db.ObjectId
+  downloads  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  uploaderStudent  PortalStudent? @relation("StudentDocuments", fields: [uploaderStudentId], references: [id])
+  uploaderFaculty  PortalFaculty? @relation("FacultyDocuments", fields: [uploaderFacultyId], references: [id])
+}
+
+// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
+model Announcement {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  content    String
+  facultyId  String   @db.ObjectId
+  targetYear Int?
+  targetBranch String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  faculty    PortalFaculty      @relation(fields: [facultyId], references: [id])
+  studentAnnouncements StudentAnnouncement[]
+}
+
+model StudentAnnouncement {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  announcementId String   @db.ObjectId
+  studentId      String   @db.ObjectId
+  isRead         Boolean  @default(false)
+  readAt         DateTime?
+
+  announcement Announcement  @relation(fields: [announcementId], references: [id])
+  student      PortalStudent @relation(fields: [studentId], references: [id])
+
+  @@unique([announcementId, studentId])
+}
+
+// ─── ATTENDANCE ──────────────────────────────────────────────────────────────
+model AttendanceRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String   @db.ObjectId
+  facultyId String   @db.ObjectId
+  subject   String
+  date      String
+  status    String
+  note      String?
+  createdAt DateTime @default(now())
+
+  student PortalStudent @relation(fields: [studentId], references: [id])
+  faculty PortalFaculty @relation(fields: [facultyId], references: [id])
+
+  @@unique([studentId, facultyId, subject, date])
+}
+
+// ─── ASSIGNMENTS ──────────────────────────────────────────────────────────────
+model Assignment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  facultyId   String   @db.ObjectId
+  dueDate     DateTime
+  targetYear  Int?
+  targetBranch String?
+  fileUrl     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  faculty     PortalFaculty          @relation(fields: [facultyId], references: [id])
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId String   @db.ObjectId
+  studentId    String   @db.ObjectId
+  fileUrl      String
+  fileName     String
+  note         String?
+  grade        String?
+  feedback     String?
+  submittedAt  DateTime @default(now())
+
+  assignment Assignment    @relation(fields: [assignmentId], references: [id])
+  student    PortalStudent @relation(fields: [studentId], references: [id])
+
+  @@unique([assignmentId, studentId])
+}
+
+model PortalRefreshToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  userId    String
+  userRole  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

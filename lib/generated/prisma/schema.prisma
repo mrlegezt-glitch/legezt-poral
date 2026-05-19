@@ -1,0 +1,227 @@
+// This is your Prisma schema file for the PORTAL
+// It extends the base legezt models with portal-specific ones
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+}
+
+// ─── PORTAL STUDENT ────────────────────────────────────────────────────────────
+model PortalStudent {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  username          String    @unique
+  fullName          String
+  email             String    @unique
+  passwordHash      String
+  phone             String?
+  enrollmentNo      String    @unique
+  year              Int // 1 | 2 | 3 | 4
+  branch            String // CSE | ECE | ME | Civil | IT | EEE | MBA | MCA
+  collegeName       String    @default("Lords Institute of Engineering and Technology")
+  profilePhotoUrl   String? // Azure Blob URL
+  bio               String?
+  googleId          String? // For Google OAuth
+  status            String    @default("pending") // pending | active | inactive | suspended
+  assignedFacultyId String?   @db.ObjectId
+  lastLoginAt       DateTime?
+  loginAttempts     Int       @default(0)
+  lockedUntil       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  sentMessages  PortalMessage[]        @relation("StudentSentMessages")
+  documents     PortalDocument[]       @relation("StudentDocuments")
+  mappings      FacultyStudentMap[]
+  announcements StudentAnnouncement[]
+  attendance    AttendanceRecord[]
+  submissions   AssignmentSubmission[]
+}
+
+// ─── PORTAL FACULTY ────────────────────────────────────────────────────────────
+model PortalFaculty {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  username        String    @unique
+  fullName        String
+  workEmail       String    @unique
+  passwordHash    String
+  phone           String?
+  designation     String // Asst. Professor | Professor | HOD | etc.
+  department      String // CSE | ECE | etc.
+  collegeName     String    @default("Lords Institute of Engineering and Technology")
+  profilePhotoUrl String? // Azure Blob URL
+  bio             String?
+  googleId        String? // For Google OAuth
+  status          String    @default("pending") // pending | active | inactive
+  lastLoginAt     DateTime?
+  loginAttempts   Int       @default(0)
+  lockedUntil     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  sentMessages     PortalMessage[]     @relation("FacultySentMessages")
+  documents        PortalDocument[]    @relation("FacultyDocuments")
+  mappings         FacultyStudentMap[]
+  announcements    Announcement[]
+  attendanceMarked AttendanceRecord[]
+  assignments      Assignment[]
+}
+
+// ─── FACULTY ↔ STUDENT MAPPING ─────────────────────────────────────────────────
+model FacultyStudentMap {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  facultyId  String   @db.ObjectId
+  studentId  String   @db.ObjectId
+  adminNote  String?
+  assignedBy String // Admin user ID (Clerk)
+  isActive   Boolean  @default(true)
+  assignedAt DateTime @default(now())
+
+  faculty PortalFaculty @relation(fields: [facultyId], references: [id])
+  student PortalStudent @relation(fields: [studentId], references: [id])
+
+  @@unique([facultyId, studentId])
+}
+
+// ─── MESSAGES ─────────────────────────────────────────────────────────────────
+model PortalMessage {
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  content        String
+  isRead         Boolean @default(false)
+  attachmentUrl  String? // Azure Blob URL
+  attachmentName String?
+
+  // Polymorphic sender
+  senderStudentId String? @db.ObjectId
+  senderFacultyId String? @db.ObjectId
+
+  // Polymorphic receiver
+  receiverStudentId String? @db.ObjectId
+  receiverFacultyId String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+
+  senderStudent PortalStudent? @relation("StudentSentMessages", fields: [senderStudentId], references: [id])
+  senderFaculty PortalFaculty? @relation("FacultySentMessages", fields: [senderFacultyId], references: [id])
+}
+
+// ─── DOCUMENTS ────────────────────────────────────────────────────────────────
+model PortalDocument {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  fileUrl     String // Azure Blob URL
+  fileName    String
+  fileSize    Int // bytes
+  mimeType    String
+  category    String? // notes | assignments | circulars | other
+  year        Int? // target year (1-4)
+  branch      String? // target branch
+  collegeName String?
+  isPublic    Boolean  @default(false)
+  sharedWith  String[] // Array of student/faculty IDs
+
+  uploaderStudentId String? @db.ObjectId
+  uploaderFacultyId String? @db.ObjectId
+
+  downloads Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploaderStudent PortalStudent? @relation("StudentDocuments", fields: [uploaderStudentId], references: [id])
+  uploaderFaculty PortalFaculty? @relation("FacultyDocuments", fields: [uploaderFacultyId], references: [id])
+}
+
+// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────
+model Announcement {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  content      String
+  facultyId    String   @db.ObjectId
+  targetYear   Int? // null = all years
+  targetBranch String? // null = all branches
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  faculty              PortalFaculty         @relation(fields: [facultyId], references: [id])
+  studentAnnouncements StudentAnnouncement[]
+}
+
+model StudentAnnouncement {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  announcementId String    @db.ObjectId
+  studentId      String    @db.ObjectId
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+
+  announcement Announcement  @relation(fields: [announcementId], references: [id])
+  student      PortalStudent @relation(fields: [studentId], references: [id])
+
+  @@unique([announcementId, studentId])
+}
+
+// ─── ATTENDANCE ──────────────────────────────────────────────────────────────
+model AttendanceRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String   @db.ObjectId
+  facultyId String   @db.ObjectId
+  subject   String
+  date      String // YYYY-MM-DD
+  status    String // present | absent | late
+  note      String?
+  createdAt DateTime @default(now())
+
+  student PortalStudent @relation(fields: [studentId], references: [id])
+  faculty PortalFaculty @relation(fields: [facultyId], references: [id])
+
+  @@unique([studentId, facultyId, subject, date])
+}
+
+// ─── ASSIGNMENTS ──────────────────────────────────────────────────────────────
+model Assignment {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String
+  facultyId    String   @db.ObjectId
+  dueDate      DateTime
+  targetYear   Int?
+  targetBranch String?
+  fileUrl      String? // Azure Blob (assignment PDF)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  faculty     PortalFaculty          @relation(fields: [facultyId], references: [id])
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  assignmentId String   @db.ObjectId
+  studentId    String   @db.ObjectId
+  fileUrl      String // Azure Blob URL
+  fileName     String
+  note         String?
+  grade        String? // Set by faculty
+  feedback     String? // Set by faculty
+  submittedAt  DateTime @default(now())
+
+  assignment Assignment    @relation(fields: [assignmentId], references: [id])
+  student    PortalStudent @relation(fields: [studentId], references: [id])
+
+  @@unique([assignmentId, studentId])
+}
+
+// ─── REFRESH TOKENS ───────────────────────────────────────────────────────────
+model PortalRefreshToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  userId    String
+  userRole  String // student | faculty
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
