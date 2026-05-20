@@ -3,44 +3,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Matte Monochromatic Palette */
-  --bg-deep: #050505;
-  --bg-panel: #0d0d0d;
-  --bg-hover: #171717;
-  --border-muted: #1c1c1c;
-  --border-active: #2e2e2e;
+  /* Premium Silver-White & Light Gray Aesthetic */
+  --bg-deep: #f1f3f6;          /* Elegant silver-light background */
+  --bg-panel: #ffffff;         /* Pure white cards/panels */
+  --bg-hover: #f8fafc;         /* Off-white hover states */
+  --border-muted: #e2e8f0;     /* Soft slate border */
+  --border-active: #cbd5e1;    /* Slate-300 active border */
   
-  --text-primary: #ffffff;
-  --text-secondary: #a3a3a3;
-  --text-muted: #666666;
+  --text-primary: #0f172a;     /* Deep slate primary text for ultimate legibility */
+  --text-secondary: #475569;   /* Slate-600 secondary text */
+  --text-muted: #94a3b8;       /* Slate-400 muted text */
   
-  /* Map student & faculty variables to monochromatic theme */
-  --student-primary: #ffffff;
-  --student-primary-glow: rgba(255, 255, 255, 0.05);
-  --student-accent: #ffffff;
-  --student-dark: #0d0d0d;
-  --student-gradient: #ffffff;
-  --student-glow: none;
+  /* Map student & faculty variables to silver-white theme */
+  --student-primary: #0f172a;
+  --student-primary-glow: rgba(15, 23, 42, 0.03);
+  --student-accent: #2563eb;   /* Premium blue accent */
+  --student-dark: #f8fafc;
+  --student-gradient: #2563eb;
+  --student-glow: 0 4px 20px rgba(37, 99, 235, 0.1);
   
-  --faculty-primary: #ffffff;
-  --faculty-primary-glow: rgba(255, 255, 255, 0.05);
-  --faculty-accent: #ffffff;
-  --faculty-dark: #0d0d0d;
-  --faculty-gradient: #ffffff;
-  --faculty-glow: none;
+  --faculty-primary: #0f172a;
+  --faculty-primary-glow: rgba(15, 23, 42, 0.03);
+  --faculty-accent: #4f46e5;   /* Premium indigo accent */
+  --faculty-dark: #f8fafc;
+  --faculty-gradient: #4f46e5;
+  --faculty-glow: 0 4px 20px rgba(79, 70, 229, 0.1);
 
-  /* Feedback (Monochrome Muted styling) */
-  --error: #ffffff;
-  --error-bg: #111111;
-  --error-border: #2e2e2e;
+  /* Feedback */
+  --error: #dc2626;
+  --error-bg: #fef2f2;
+  --error-border: #fca5a5;
   
-  --success: #ffffff;
-  --success-bg: #111111;
-  --success-border: #2e2e2e;
+  --success: #16a34a;
+  --success-bg: #f0fdf4;
+  --success-border: #86efac;
   
-  --warning: #a3a3a3;
-  --warning-bg: #111111;
-  --warning-border: #222222;
+  --warning: #ca8a04;
+  --warning-bg: #fefdf0;
+  --warning-border: #fef08a;
 
   /* Fonts & Radius */
   --font-main: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
@@ -50,12 +50,12 @@
   --radius-sm: 4px;
   
   /* Shadows & Glassmorphism */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.8);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.08);
   
-  --glass-bg: rgba(13, 13, 13, 0.8);
-  --glass-border: #1c1c1c;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(229, 231, 235, 0.8);
   --glass-blur: blur(12px);
 }
 
@@ -70,7 +70,7 @@ body {
   font-family: var(--font-main);
   background: var(--bg-deep);
   background-image: 
-    radial-gradient(circle at 50% 0%, #161616 0%, #050505 100%);
+    radial-gradient(circle at 50% 0%, #ffffff 0%, #f1f3f6 100%);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
@@ -86,11 +86,11 @@ body {
   background: var(--bg-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: #262626;
+  background: #cbd5e1;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
+  background: #94a3b8;
 }
 
 a {
@@ -300,11 +300,11 @@ button, input, textarea, select {
 }
 
 .form-input, .form-select {
-  background: var(--bg-deep);
+  background: var(--bg-panel);
   border: 1px solid var(--border-muted);
   border-radius: 6px;
   padding: 12px 16px;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 0.9rem;
   outline: none;
   transition: all 0.2s ease;
@@ -316,7 +316,7 @@ button, input, textarea, select {
 
 .form-select option {
   background: var(--bg-panel);
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .form-row {
@@ -338,7 +338,7 @@ button, input, textarea, select {
   letter-spacing: 0.5px;
   text-transform: uppercase;
   background: var(--text-primary);
-  color: var(--bg-deep);
+  color: var(--bg-panel);
 }
 
 .btn-primary:hover {
@@ -360,7 +360,7 @@ button, input, textarea, select {
   border-radius: 6px;
   border: 1px solid var(--border-muted);
   background: transparent;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;

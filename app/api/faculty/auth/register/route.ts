@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(d.password, 12);
   const faculty = await prisma.portalFaculty.create({
-    data: { fullName: d.fullName, username: d.username, workEmail: d.workEmail, passwordHash, phone: d.phone, designation: d.designation, department: d.department, collegeName: d.collegeName || COLLEGE_NAME, bio: d.bio, status: "approved" },
+    data: { fullName: d.fullName, username: d.username, workEmail: d.workEmail, passwordHash, phone: d.phone, designation: d.designation, department: d.department, collegeName: d.collegeName || COLLEGE_NAME, bio: d.bio, status: "pending" },
     select: { id: true, fullName: true, workEmail: true, username: true, status: true },
   });
 
