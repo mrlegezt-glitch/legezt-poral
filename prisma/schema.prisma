@@ -217,3 +217,18 @@ model PortalRefreshToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+// ─── ADMIN CONSOLE DOCUMENTS (SHARED) ──────────────────────────────────────────
+model Document {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  category    String?
+  downloads   Int      @default(0)
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
