@@ -55,12 +55,12 @@ export async function uploadToBlob(
   return blobName;
 }
 
-const ADMIN_SERVER_BASE = "https://admin.mrlegezt.me";
+const ADMIN_SERVER_BASE = "https://legezt-backend-api.azurewebsites.net";
 
 /**
  * Generate a download URL for a stored file.
  * Handles 3 cases:
- *   1. Already a full https:// URL (admin server or external) → return as-is
+ *   1. Already a full https:// URL (admin server or external) → return as-is (with admin rewrite)
  *   2. /uploads/... path → prepend admin server base URL
  *   3. Azure blob path (documents/...) → generate SAS token
  */
@@ -69,6 +69,13 @@ export function generateSasUrl(fileUrl: string, expiryMinutes = 60): string {
 
   // Case 1: Already a full URL (e.g. from admin backend or previous migration)
   if (fileUrl.startsWith("https://") || fileUrl.startsWith("http://")) {
+    // If it points to the admin console uploads, rewrite it to point directly to the backend Express uploads
+    if (fileUrl.startsWith("https://admin.mrlegezt.me/uploads/")) {
+      return fileUrl.replace("https://admin.mrlegezt.me/uploads/", "https://legezt-backend-api.azurewebsites.net/uploads/");
+    }
+    if (fileUrl.startsWith("http://admin.mrlegezt.me/uploads/")) {
+      return fileUrl.replace("http://admin.mrlegezt.me/uploads/", "https://legezt-backend-api.azurewebsites.net/uploads/");
+    }
     return fileUrl;
   }
 
