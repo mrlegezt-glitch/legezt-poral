@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { Share2 } from "lucide-react";
+import { Share2, Eye, Download, X } from "lucide-react";
 import EditorStudio from "@/app/components/EditorStudio";
 
 type Doc = { id: string; title: string; fileName: string; fileSize: number; category?: string; branch?: string; year?: number; downloadUrl: string; createdAt: string; };
@@ -22,6 +22,7 @@ export default function FacultyDocumentsPage() {
   const [isPublic, setIsPublic] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [activeShareDoc, setActiveShareDoc] = useState<Doc | null>(null);
+  const [viewingDoc, setViewingDoc] = useState<Doc | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = () => fetch("/api/documents").then((r) => r.json()).then((d) => { setDocs(d.documents ?? []); setLoading(false); });
@@ -136,6 +137,62 @@ export default function FacultyDocumentsPage() {
           onClose={() => setActiveShareDoc(null)} 
         />
       )}
+      {viewingDoc && (
+        <PdfViewerModal doc={viewingDoc} onClose={() => setViewingDoc(null)} />
+      )}
+    </div>
+  );
+}
+
+function PdfViewerModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
+  const [loading, setLoading] = useState(true);
+  const isPdf = doc.fileName.endsWith(".pdf");
+  return (
+    <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.92)", backdropFilter: "blur(12px)", zIndex: 99999, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(17,19,24,0.95)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: "1.4rem" }}>📄</span>
+          <div>
+            <div style={{ color: "#fff", fontWeight: 600, fontSize: "0.95rem" }}>{doc.title}</div>
+            <div style={{ color: "#64748b", fontSize: "0.75rem" }}>{doc.category ?? "Document"} · {(doc.fileSize / 1024).toFixed(0)} KB</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {doc.downloadUrl && (
+            <a href={doc.downloadUrl} download={doc.fileName} style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: "#D0E4FF", color: "#003258", border: "none", borderRadius: "8px", padding: "8px 14px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", textDecoration: "none" }}>
+              <Download size={14} /> Download
+            </a>
+          )}
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center" }}>
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+        {loading && (
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#94a3b8", gap: 12 }}>
+            <div style={{ width: 36, height: 36, border: "3px solid rgba(208,228,255,0.2)", borderTop: "3px solid #D0E4FF", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <span>Loading document...</span>
+          </div>
+        )}
+        {isPdf && doc.downloadUrl ? (
+          <iframe src={doc.downloadUrl} onLoad={() => setLoading(false)} onError={() => setLoading(false)} style={{ width: "100%", height: "100%", border: "none" }} title={doc.title} />
+        ) : doc.downloadUrl ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 16, color: "#94a3b8" }}>
+            <div style={{ fontSize: "0.85rem" }}>Preview not available. Please download to open.</div>
+            <a href={doc.downloadUrl} download={doc.fileName} style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: "#D0E4FF", color: "#003258", borderRadius: "10px", padding: "12px 24px", fontWeight: 700, textDecoration: "none" }}>
+              <Download size={16} /> Download File
+            </a>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, color: "#94a3b8" }}>
+            <span style={{ fontSize: "3rem" }}>⏳</span>
+            <div style={{ color: "#cbd5e1", fontWeight: 600 }}>Link Expired</div>
+            <button onClick={() => window.location.reload()} style={{ backgroundColor: "#D0E4FF", color: "#003258", border: "none", borderRadius: "10px", padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}>🔄 Refresh</button>
+          </div>
+        )}
+      </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
