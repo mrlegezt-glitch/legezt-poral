@@ -20,6 +20,7 @@ import {
   Share2, 
   FolderPlus 
 } from "lucide-react";
+import { saveDraft, loadDraft, clearDraft, DraftData } from "@/lib/draft-db";
 
 interface EditorImage {
   id: string;
@@ -81,6 +82,96 @@ export default function EditorStudio({ onClose, onUploadSuccess, uploaderRole }:
   const lastCoordsRef = useRef({ x: 0, y: 0 });
 
   const activeImage = images.find(img => img.id === activeImageId);
+
+  // Draft recovery and auto-save states
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<DraftData | null>(null);
+  const [isDraftLoading, setIsDraftLoading] = useState(true);
+
+  // Check for unsaved draft on load
+  useEffect(() => {
+    async function checkDraft() {
+      try {
+        const draft = await loadDraft();
+        if (draft && draft.images && draft.images.length > 0) {
+          setPendingDraft(draft);
+          setShowRestoreModal(true);
+        }
+      } catch (err) {
+        console.error("Failed to load draft:", err);
+      } finally {
+        setIsDraftLoading(false);
+      }
+    }
+    checkDraft();
+  }, []);
+
+  // Debounced auto-save draft to IndexedDB
+  useEffect(() => {
+    if (images.length === 0) {
+      clearDraft();
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        await saveDraft(images, {
+          title,
+          description,
+          category,
+          targetYear,
+          targetBranch,
+          targetBatch,
+          isPublic,
+          useWatermark,
+          watermarkText,
+          activeImageId
+        });
+      } catch (err) {
+        console.error("Failed to auto-save draft:", err);
+      }
+    }, 1000); // 1-second debounce to avoid writing on every keypress
+
+    return () => clearTimeout(timer);
+  }, [
+    images,
+    title,
+    description,
+    category,
+    targetYear,
+    targetBranch,
+    targetBatch,
+    isPublic,
+    useWatermark,
+    watermarkText,
+    activeImageId
+  ]);
+
+  const restoreDraftWorkspace = () => {
+    if (!pendingDraft) return;
+    const { images: draftImages, metadata } = pendingDraft;
+    
+    setImages(draftImages);
+    setTitle(metadata.title || "");
+    setDescription(metadata.description || "");
+    setCategory(metadata.category || "Notes");
+    setTargetYear(metadata.targetYear || "all");
+    setTargetBranch(metadata.targetBranch || "all");
+    setTargetBatch(metadata.targetBatch || "all");
+    setIsPublic(metadata.isPublic !== false);
+    setUseWatermark(!!metadata.useWatermark);
+    setWatermarkText(metadata.watermarkText || "LIET PORTAL");
+    setActiveImageId(metadata.activeImageId);
+    
+    setShowRestoreModal(false);
+    setPendingDraft(null);
+  };
+
+  const discardDraftWorkspace = async () => {
+    await clearDraft();
+    setShowRestoreModal(false);
+    setPendingDraft(null);
+  };
 
   // File uploading to local list
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -357,6 +448,7 @@ export default function EditorStudio({ onClose, onUploadSuccess, uploaderRole }:
       });
 
       if (res.ok) {
+        await clearDraft(); // Remove saved draft progress upon successful compile/distribution
         setUploadProgress("Completed!");
         alert("PDF generated and distributed successfully!");
         onUploadSuccess();
@@ -1291,6 +1383,131 @@ export default function EditorStudio({ onClose, onUploadSuccess, uploaderRole }:
           >
             &times;
           </button>
+        </div>
+      )}
+
+      {/* Premium Unsaved Draft Restore Modal */}
+      {showRestoreModal && pendingDraft && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            backdropFilter: "blur(20px)",
+            zIndex: 100000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "24px"
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "rgba(30, 41, 59, 0.95)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "16px",
+              padding: "32px",
+              maxWidth: "500px",
+              width: "100%",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div
+                style={{
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(59, 130, 246, 0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#3b82f6",
+                  border: "1px solid rgba(59, 130, 246, 0.3)",
+                  boxShadow: "0 0 20px rgba(59, 130, 246, 0.2)"
+                }}
+              >
+                <Sparkles size={28} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", margin: 0, color: "#fff" }}>
+                  Restore Workspace?
+                </h3>
+                <p style={{ fontSize: "0.8rem", color: "#94a3b8", margin: 0, marginTop: 4 }}>
+                  Unsaved draft from {new Date(pendingDraft.metadata.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} recovered
+                </p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                backgroundColor: "rgba(15, 23, 42, 0.4)",
+                border: "1px solid rgba(255, 255, 255, 0.05)",
+                borderRadius: "10px",
+                padding: "16px",
+                fontSize: "0.85rem",
+                color: "#cbd5e1",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8
+              }}
+            >
+              <div><strong>Title:</strong> {pendingDraft.metadata.title || "(Untitled Document)"}</div>
+              <div><strong>Pages:</strong> {pendingDraft.images.length} scans uploaded</div>
+              <div><strong>Category:</strong> {pendingDraft.metadata.category}</div>
+            </div>
+
+            <p style={{ fontSize: "0.85rem", color: "#cbd5e1", margin: 0, lineHeight: "1.5" }}>
+              It looks like your browser was closed or you lost connection. Would you like to resume editing where you left off?
+            </p>
+
+            <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+              <button
+                onClick={restoreDraftWorkspace}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  fontSize: "0.9rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: "0 4px 14px rgba(59, 130, 246, 0.4)",
+                  transition: "background-color 0.2s"
+                }}
+              >
+                <Check size={16} /> Resume Draft
+              </button>
+              <button
+                onClick={discardDraftWorkspace}
+                style={{
+                  padding: "12px 18px",
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  color: "#ef4444",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  borderRadius: "8px",
+                  fontSize: "0.9rem",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
