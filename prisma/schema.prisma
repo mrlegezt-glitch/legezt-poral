@@ -116,6 +116,7 @@ model PortalDocument {
   category      String?
   year          Int?
   branch        String?
+  batch         String?
   collegeName   String?
   isPublic      Boolean  @default(false)
   sharedWith    String[]

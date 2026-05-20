@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
   const category = formData.get("category") as string | null;
   const year = formData.get("year") ? parseInt(formData.get("year") as string) : null;
   const branch = formData.get("branch") as string | null;
+  const batch = formData.get("batch") as string | null;
   const isPublic = formData.get("isPublic") === "true";
 
   if (!file || !title) return NextResponse.json({ error: "File and title required" }, { status: 400 });
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
       fileUrl: blobName, fileName: file.name, fileSize: file.size, mimeType: file.type,
       category: category ?? undefined,
       year: year ?? undefined, branch: branch ?? undefined,
+      batch: batch ?? undefined,
       isPublic,
       uploaderStudentId: session.role === "student" ? session.userId : undefined,
       uploaderFacultyId: session.role === "faculty" ? session.userId : undefined,

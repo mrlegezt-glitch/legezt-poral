@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import EditorStudio from "@/app/components/EditorStudio";
 
 type Doc = { id: string; title: string; fileName: string; fileSize: number; category?: string; branch?: string; year?: number; downloadUrl: string; createdAt: string; };
 
@@ -18,6 +19,7 @@ export default function FacultyDocumentsPage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Notes");
   const [isPublic, setIsPublic] = useState(true);
+  const [showEditor, setShowEditor] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = () => fetch("/api/documents").then((r) => r.json()).then((d) => { setDocs(d.documents ?? []); setLoading(false); });
@@ -38,7 +40,16 @@ export default function FacultyDocumentsPage() {
 
   return (
     <div className="portal-main">
-      <div className="portal-topbar"><div className="portal-topbar-title">📂 Documents</div></div>
+      <div className="portal-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="portal-topbar-title">📂 Documents</div>
+        <button 
+          onClick={() => setShowEditor(true)} 
+          className="btn-primary faculty" 
+          style={{ width: "auto", display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", border: "none", outline: "none", fontSize: "0.85rem", padding: "8px 16px", borderRadius: "8px", cursor: "pointer" }}
+        >
+          🎨 PDF Editor Studio
+        </button>
+      </div>
       <div className="portal-content">
         <form onSubmit={handleUpload} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 24, marginBottom: 28 }}>
           <div className="section-title" style={{ marginBottom: 16 }}>📤 Upload Document</div>
@@ -82,6 +93,13 @@ export default function FacultyDocumentsPage() {
           </div>
         )}
       </div>
+      {showEditor && (
+        <EditorStudio 
+          onClose={() => setShowEditor(false)} 
+          onUploadSuccess={load} 
+          uploaderRole="faculty" 
+        />
+      )}
     </div>
   );
 }
