@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File and title required" }, { status: 400 });
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 413 });
+      return NextResponse.json({ error: "File too large (max 100MB)" }, { status: 413 });
     }
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json({ error: `File type '${file.type}' not allowed` }, { status: 415 });
