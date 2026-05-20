@@ -969,6 +969,20 @@ button, input, textarea, select {
   color: var(--text-muted);
 }
 
+.portal-mobile-toggle-header {
+  display: none !important;
+}
+
+.portal-mobile-toggle {
+  display: none; /* hidden on desktop by default */
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 12px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
   .auth-page {
@@ -1008,6 +1022,9 @@ button, input, textarea, select {
     backdrop-filter: blur(4px);
     z-index: 999;
   }
+  .portal-mobile-toggle-header {
+    display: flex !important;
+  }
   .portal-mobile-toggle {
     display: block;
   }
@@ -1019,19 +1036,5 @@ button, input, textarea, select {
   }
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-}
-.portal-mobile-toggle {
-  display: none; /* hidden on desktop */
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  padding: 8px;
-  margin-right: 12px;
-}
-@media (min-width: 769px) {
-  .portal-mobile-toggle {
-    display: none !important;
   }
 }

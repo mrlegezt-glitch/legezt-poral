@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 export async function POST() {
   const res = NextResponse.json({ message: "Logged out" });
-  res.cookies.delete("portal_access_token");
-  res.cookies.delete("portal_refresh_token");
+  res.cookies.set("portal_access_token", "", { maxAge: 0, path: "/" });
+  res.cookies.set("portal_refresh_token", "", { maxAge: 0, path: "/" });
   return res;
 }

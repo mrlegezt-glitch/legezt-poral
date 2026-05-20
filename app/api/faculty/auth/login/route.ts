@@ -80,14 +80,15 @@ export async function POST(req: NextRequest) {
       httpOnly: true, 
       secure: isProd, 
       sameSite: "lax", 
-      maxAge: 30 * 24 * 60 * 60 
+      maxAge: 30 * 24 * 60 * 60,
+      path: "/"
     });
     res.cookies.set("portal_refresh_token", refreshToken, { 
       httpOnly: true, 
       secure: isProd, 
       sameSite: "lax", 
       maxAge: 90 * 24 * 60 * 60, 
-      path: "/api/faculty/auth/refresh" 
+      path: "/"
     });
 
     console.log(`[Faculty Login] Login successful for email: ${email}`);
