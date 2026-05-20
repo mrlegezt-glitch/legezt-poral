@@ -54,18 +54,18 @@ export default function StudentLoginPage() {
     <div className="auth-page">
       <div className="auth-left student">
         <div style={{ maxWidth: 400, textAlign: "center" }}>
-          <div className="auth-brand student">🎓 Portal</div>
+          <div className="auth-brand student">Portal</div>
           <div style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: 16, color: "#e2e8f0" }}>{collegeName}</div>
           <p className="auth-tagline">Access your assignments, messages, documents, and academic progress — all in one place.</p>
           <div style={{ marginTop: 48, display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
-            {["📚 View assignments & notes from faculty", "💬 Message your faculty directly", "📂 Download shared documents", "📊 Track attendance & grades"].map((item) => (
+            {["View assignments & notes from faculty", "Message your faculty directly", "Download shared documents", "Track attendance & grades"].map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: 10, color: "#94a3b8", fontSize: "0.9rem" }}>{item}</div>
             ))}
           </div>
         </div>
       </div>
       <div className="auth-right">
-        <div className="auth-title">Welcome back 👋</div>
+        <div className="auth-title">Welcome back</div>
         <div className="auth-subtitle">Sign in to your student account</div>
         {error && <div className="form-error" style={{ marginBottom: 16 }}>{error}</div>}
         {successMsg && <div className="form-success" style={{ marginBottom: 16 }}>{successMsg}</div>}

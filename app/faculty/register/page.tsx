@@ -39,7 +39,7 @@ export default function FacultyRegisterPage() {
     <div className="auth-page">
       <div className="auth-left faculty">
         <div style={{ maxWidth: 360, textAlign: "center" }}>
-          <div className="auth-brand faculty">👨‍🏫 Faculty Portal</div>
+          <div className="auth-brand faculty">Faculty Portal</div>
           <div style={{ color: "#94a3b8", marginTop: 8 }}>{collegeName}</div>
         </div>
       </div>

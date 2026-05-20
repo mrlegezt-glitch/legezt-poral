@@ -39,10 +39,10 @@ export default function FacultyLoginPage() {
     <div className="auth-page">
       <div className="auth-left faculty">
         <div style={{ maxWidth: 400, textAlign: "center" }}>
-          <div className="auth-brand faculty">👨‍🏫 Faculty Portal</div>
+          <div className="auth-brand faculty">Faculty Portal</div>
           <div style={{ fontSize: "1rem", color: "#94a3b8", marginTop: 8 }}>{collegeName}</div>
           <div style={{ marginTop: 48, display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
-            {["👥 Monitor assigned students", "📢 Post announcements", "📋 Mark attendance", "📝 Share assignments & notes", "💬 Communicate with students"].map((item) => (
+            {["Monitor assigned students", "Post announcements", "Mark attendance", "Share assignments & notes", "Communicate with students"].map((item) => (
               <div key={item} style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{item}</div>
             ))}
           </div>
