@@ -55,11 +55,30 @@ export async function uploadToBlob(
   return blobName;
 }
 
+const ADMIN_SERVER_BASE = "https://admin.mrlegezt.me";
+
 /**
- * Generate a short-lived SAS URL for a blob (read access, 1 hour)
- * Greedy approach: only generate when needed, not in advance
+ * Generate a download URL for a stored file.
+ * Handles 3 cases:
+ *   1. Already a full https:// URL (admin server or external) → return as-is
+ *   2. /uploads/... path → prepend admin server base URL
+ *   3. Azure blob path (documents/...) → generate SAS token
  */
-export function generateSasUrl(blobName: string, expiryMinutes = 60): string {
+export function generateSasUrl(fileUrl: string, expiryMinutes = 60): string {
+  if (!fileUrl) return "";
+
+  // Case 1: Already a full URL (e.g. from admin backend or previous migration)
+  if (fileUrl.startsWith("https://") || fileUrl.startsWith("http://")) {
+    return fileUrl;
+  }
+
+  // Case 2: Relative upload path from Express backend (e.g. /uploads/12345-file.pdf)
+  if (fileUrl.startsWith("/uploads/") || fileUrl.startsWith("uploads/")) {
+    const cleanPath = fileUrl.startsWith("/") ? fileUrl : `/${fileUrl}`;
+    return `${ADMIN_SERVER_BASE}${cleanPath}`;
+  }
+
+  // Case 3: Azure Blob Storage path — generate SAS token
   const accountKey = getAccountKey();
   if (!accountKey || !accountName) {
     return ""; // Silent fallback during build/CI environment
@@ -72,14 +91,14 @@ export function generateSasUrl(blobName: string, expiryMinutes = 60): string {
   const sasToken = generateBlobSASQueryParameters(
     {
       containerName,
-      blobName,
+      blobName: fileUrl,
       permissions: BlobSASPermissions.parse("r"),
       expiresOn,
     },
     sharedKeyCredential
   ).toString();
 
-  return `https://${accountName}.blob.core.windows.net/${containerName}/${blobName}?${sasToken}`;
+  return `https://${accountName}.blob.core.windows.net/${containerName}/${fileUrl}?${sasToken}`;
 }
 
 /**
