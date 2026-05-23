@@ -62,16 +62,40 @@ export default function PortalLandingPage() {
               className="portal-card"
               style={{
                 textAlign: "left",
-                color: "#f4f4f5",
                 alignItems: "flex-start",
                 padding: "36px",
-                width: "270px"
+                width: "270px",
+                borderColor: `rgba(${c.color}, 0.25)`,
+                ['--hover-color' as any]: `rgba(${c.color}, 1)`,
+                ['--hover-bg-glow' as any]: `rgba(${c.color}, 0.06)`,
               }}
             >
               <div style={{ position: "relative", zIndex: 1, pointerEvents: "none" }}>
-                <div style={{ fontSize: "1.6rem", fontWeight: 700, marginBottom: "12px", letterSpacing: "-0.5px" }}>{c.shortName}</div>
+                <div 
+                  className="portal-card-shortname"
+                  style={{ 
+                    fontSize: "1.65rem", 
+                    fontWeight: 800, 
+                    marginBottom: "12px", 
+                    letterSpacing: "-0.5px",
+                    color: "var(--text-primary)",
+                    transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+                  }}
+                >
+                  {c.shortName}
+                </div>
                 <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{c.name}</div>
               </div>
+              <span className="college-dot" style={{
+                position: 'absolute',
+                top: '24px',
+                right: '24px',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: `rgb(${c.color})`,
+                boxShadow: `0 0 12px rgba(${c.color}, 0.7)`,
+              }} />
             </button>
           ))}
         </div>

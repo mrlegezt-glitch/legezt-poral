@@ -166,10 +166,16 @@ button, input, textarea, select {
 }
 
 .portal-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--border-active);
-  background: var(--bg-hover);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-6px) scale(1.025);
+  border-color: var(--hover-color, var(--border-active)) !important;
+  background: var(--hover-bg-glow, var(--bg-hover)) !important;
+  box-shadow: 
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 0 20px var(--hover-bg-glow, transparent);
+}
+.portal-card:hover .portal-card-shortname {
+  color: var(--hover-color) !important;
+  text-shadow: 0 0 8px var(--hover-bg-glow);
 }
 
 .portal-card-icon {
