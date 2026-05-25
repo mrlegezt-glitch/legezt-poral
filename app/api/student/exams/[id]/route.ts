@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getPortalSession();
   if (!session || session.role !== "student") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Next.js params is a Promise in newer Next.js versions, let's await it or read properties
-  const { id: examId } = params;
+  const { id: examId } = await params;
 
   try {
     const exam = await prisma.exam.findUnique({

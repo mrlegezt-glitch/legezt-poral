@@ -4,14 +4,14 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getPortalSession();
   if (!session || session.role !== "faculty") {
     return new Response("Unauthorized", { status: 401 });
   }
 
   // Next.js dynamic route params
-  const { id: examId } = params;
+  const { id: examId } = await params;
 
   try {
     const exam = await prisma.exam.findUnique({
