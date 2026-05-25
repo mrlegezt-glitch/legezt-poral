@@ -78,6 +78,8 @@ export async function POST(req: NextRequest) {
         enrollmentNo: student.enrollmentNo, 
         profilePhotoUrl: student.profilePhotoUrl 
       },
+      accessToken,
+      refreshToken
     });
 
     const isProd = process.env.NODE_ENV === "production";

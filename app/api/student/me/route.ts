@@ -12,5 +12,10 @@ export async function GET(req: NextRequest) {
   });
 
   if (!student) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ student });
+  return NextResponse.json({
+    student: {
+      ...student,
+      collegeLogoUrl: "/lords_logo.png"
+    }
+  });
 }

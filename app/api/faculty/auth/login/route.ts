@@ -71,6 +71,8 @@ export async function POST(req: NextRequest) {
         department: faculty.department, 
         profilePhotoUrl: faculty.profilePhotoUrl 
       },
+      accessToken,
+      refreshToken
     });
 
     const isProd = process.env.NODE_ENV === "production";

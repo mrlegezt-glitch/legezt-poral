@@ -38,6 +38,7 @@ model PortalStudent {
   announcements    StudentAnnouncement[]
   attendance       AttendanceRecord[]
   submissions      AssignmentSubmission[]
+  examSubmissions  ExamSubmission[]
 }
 
 // ─── PORTAL FACULTY ────────────────────────────────────────────────────────────
@@ -67,6 +68,7 @@ model PortalFaculty {
   announcements    Announcement[]
   attendanceMarked AttendanceRecord[]
   assignments      Assignment[]
+  exams            Exam[]
 }
 
 // ─── FACULTY ↔ STUDENT MAPPING ─────────────────────────────────────────────────
@@ -231,4 +233,59 @@ model Document {
   isPublic    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ─── SURPRISE EXAMINATION SYSTEM (SCSES) ───────────────────────────────────────
+model Exam {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  durationMins Int
+  latitude     Float
+  longitude    Float
+  radiusMeters Float       @default(100.0) // 200m diameter boundary
+  isActive     Boolean     @default(true)
+  facultyId    String      @db.ObjectId
+  createdAt    DateTime    @default(now())
+
+  faculty      PortalFaculty    @relation(fields: [facultyId], references: [id])
+  questions    Question[]
+  submissions  ExamSubmission[]
+}
+
+model Question {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  examId        String   @db.ObjectId
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctOption String   // "A", "B", "C", "D"
+  marks         Int      @default(1)
+
+  exam          Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+model ExamSubmission {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  examId         String          @db.ObjectId
+  studentId      String          @db.ObjectId
+  score          Int             @default(0)
+  status         String          @default("ongoing") // "ongoing", "submitted", "terminated"
+  startedAt      DateTime        @default(now())
+  submittedAt    DateTime?
+  anomaliesLog   AnomalyRecord[]
+
+  exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student        PortalStudent   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model AnomalyRecord {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId String         @db.ObjectId
+  type         String         // "FACIAL_ABSENCE", "MULTIPLE_FACES", "GAZE_DEVIATION", "APP_BACKGROUNDED"
+  timestamp    DateTime       @default(now())
+  screenshot   String?        // Base64 or host URL
+
+  submission   ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 }

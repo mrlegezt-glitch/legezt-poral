@@ -8,6 +8,7 @@ type Faculty = { id: string; fullName: string; username: string; workEmail: stri
 const navItems = [
   { href: "/faculty/dashboard", label: "Dashboard" },
   { href: "/faculty/students", label: "My Students" },
+  { href: "/faculty/exams", label: "Surprise Exams" },
   { href: "/faculty/messages", label: "Messages" },
   { href: "/faculty/documents", label: "Documents" },
   { href: "/faculty/profile", label: "Profile" },

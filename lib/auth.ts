@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 const ACCESS_SECRET = process.env.JWT_SECRET || "LeGeZt_Portal_JWT_Super_Secret_2025_X9mK!@#v3rYs3cur3";
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "LeGeZt_Refresh_Token_Secret_X9mKv3ryS3cur3!@#2025";
@@ -96,10 +96,31 @@ export async function verifyRefreshToken(token: string): Promise<TokenPayload | 
   return verifyJWT(token, REFRESH_SECRET);
 }
 
-/** Read portal session from httpOnly cookie (server-side only) */
+/** Read portal session from httpOnly cookie or Authorization header (server-side only) */
 export async function getPortalSession(): Promise<TokenPayload | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("portal_access_token")?.value;
+  let token: string | undefined;
+  
+  // Try cookie first
+  try {
+    const cookieStore = await cookies();
+    token = cookieStore.get("portal_access_token")?.value;
+  } catch (e) {
+    // cookies() might fail outside Next.js request context or in certain environments
+  }
+  
+  // Try Authorization header if cookie not found
+  if (!token) {
+    try {
+      const headersList = await headers();
+      const authHeader = headersList.get("authorization");
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      }
+    } catch (e) {
+      // headers() might fail outside Request context
+    }
+  }
+  
   if (!token) return null;
   return await verifyAccessToken(token);
 }
