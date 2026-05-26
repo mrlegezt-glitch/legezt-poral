@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
 
     const questions: any[] = [];
     const errors: string[] = [];
+    const requiredHeaders = ["question", "option_a", "option_b", "option_c", "option_d", "correct_option", "marks"];
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
