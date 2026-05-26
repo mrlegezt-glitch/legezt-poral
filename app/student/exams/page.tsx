@@ -322,7 +322,7 @@ export default function StudentExamsPage() {
   const formatTime = (sec: number) => {
     const mins = Math.floor(sec / 60);
     const secs = sec % 60;
-    return `${mins.toString().padLeft(2, "0")}:${secs.toString().padLeft(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleOptionSelect = (qId: string, optionKey: string) => {
