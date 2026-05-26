@@ -10,6 +10,7 @@ const navItems = [
   { href: "/student/messages", label: "Messages" },
   { href: "/student/documents", label: "Documents" },
   { href: "/student/exams", label: "Surprise Exams" },
+  { href: "/student/results", label: "Results" },
   { href: "/student/profile", label: "Profile" },
 ];
 

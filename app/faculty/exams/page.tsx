@@ -39,6 +39,7 @@ interface Submission {
   branch: string;
   status: string;
   score: number;
+  isPublished?: boolean;
   startedAt: string;
   submittedAt: string | null;
   anomalies: Anomaly[];
@@ -63,11 +64,13 @@ export default function FacultyExamsPage() {
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [correctedQuestions, setCorrectedQuestions] = useState<Question[] | null>(null);
   const [correctionError, setCorrectionError] = useState<string | null>(null);
+  const [showGeminiModal, setShowGeminiModal] = useState(false);
 
   // Monitor states
   const [activeMonitorExam, setActiveMonitorExam] = useState<Exam | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [monitorConnected, setMonitorConnected] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const [selectedStudentLogs, setSelectedStudentLogs] = useState<Submission | null>(null);
 
@@ -269,6 +272,29 @@ ${csvText}`;
     setSubmissions([]);
     setSelectedStudentLogs(null);
     setView("LIST");
+  };
+
+  const handlePublishResults = async (publish: boolean) => {
+    if (!activeMonitorExam) return;
+    setIsPublishing(true);
+    try {
+      const res = await fetch(`/api/faculty/exams/${activeMonitorExam.id}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publish })
+      });
+      if (res.ok) {
+        alert(publish ? "Results have been published directly to students!" : "Results have been retracted.");
+      } else {
+        const d = await res.json();
+        alert(d.error || "Failed to update results status.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Network failure during publish action.");
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   // Helper status checkers for live student cards
@@ -521,7 +547,31 @@ ${csvText}`;
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Questions Import (CSV File)</label>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <label className="form-label">Questions Import (CSV File)</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowGeminiModal(true)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--faculty-accent)",
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        textTransform: "uppercase",
+                        padding: "0 0 4px 0"
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M12 2L14.7 9.3L22 12L14.7 14.7L12 22L9.3 14.7L2 12L9.3 9.3L12 2Z" />
+                      </svg>
+                      Gemini Helper
+                    </button>
+                  </div>
                   <div
                     style={{
                       border: "2px dashed var(--border-muted)",
@@ -818,14 +868,52 @@ ${csvText}`;
                 <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.8rem" }}>
                   LIVE PROCTORING SHELL
                 </h1>
+                {submissions.length > 0 && (
+                  <span
+                    className="badge"
+                    style={{
+                      backgroundColor: submissions[0].isPublished ? "rgba(22, 163, 74, 0.1)" : "rgba(234, 179, 8, 0.1)",
+                      color: submissions[0].isPublished ? "var(--success)" : "rgba(234, 179, 8, 1)",
+                      borderColor: "transparent",
+                      fontSize: "0.7rem",
+                      fontWeight: "bold",
+                      padding: "4px 8px"
+                    }}
+                  >
+                    {submissions[0].isPublished ? "RESULTS PUBLISHED" : "RESULTS DRAFT"}
+                  </span>
+                )}
               </div>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginTop: "4px" }}>
                 Monitoring exam: <strong style={{ color: "var(--text-primary)" }}>{activeMonitorExam.title}</strong>
               </p>
             </div>
-            <button className="btn-outline" onClick={handleCloseMonitor} style={{ width: "auto", cursor: "pointer" }}>
-              Close Live Monitor
-            </button>
+            <div style={{ display: "flex", gap: "12px" }}>
+              {submissions.length > 0 && (
+                <button
+                  className="btn-primary"
+                  onClick={() => handlePublishResults(!submissions[0].isPublished)}
+                  disabled={isPublishing}
+                  style={{
+                    width: "auto",
+                    cursor: "pointer",
+                    backgroundColor: submissions[0].isPublished ? "rgba(220, 38, 38, 0.1)" : "var(--faculty-accent)",
+                    borderColor: submissions[0].isPublished ? "var(--error)" : "transparent",
+                    color: submissions[0].isPublished ? "var(--error)" : "#ffffff",
+                    borderWidth: submissions[0].isPublished ? "1px" : "0",
+                    borderStyle: "solid",
+                    fontWeight: "bold",
+                    padding: "10px 18px",
+                    boxShadow: submissions[0].isPublished ? "none" : "0 0 12px rgba(79, 70, 229, 0.2)",
+                  }}
+                >
+                  {isPublishing ? "Processing..." : submissions[0].isPublished ? "Retract Results" : "Publish Results"}
+                </button>
+              )}
+              <button className="btn-outline" onClick={handleCloseMonitor} style={{ width: "auto", cursor: "pointer" }}>
+                Close Live Monitor
+              </button>
+            </div>
           </div>
 
           {/* Metrics aggregate board */}
@@ -1124,6 +1212,122 @@ ${csvText}`;
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {showGeminiModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(10, 14, 23, 0.6)",
+            backdropFilter: "blur(4px)",
+            zIndex: 1100,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              width: "500px",
+              backgroundColor: "var(--bg-panel)",
+              border: "1px solid var(--border-muted)",
+              borderRadius: "12px",
+              padding: "30px",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "1.4rem" }}>✨</span>
+                <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.2rem", color: "var(--faculty-accent)" }}>
+                  GEMINI SURPRISE TEST CREATOR
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowGeminiModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  fontSize: "1.2rem",
+                  cursor: "pointer",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "16px", lineHeight: "1.5" }}>
+              Surprise tests ke questions aur unke option keys ko generate karne ke liye aap Google Gemini AI ka use kar sakte hain. Aap direct topic/syllabus paste karenge aur Gemini aapko copy-pasteable format dega.
+            </p>
+
+            <div
+              style={{
+                background: "var(--bg-deep)",
+                borderRadius: "8px",
+                padding: "16px",
+                fontSize: "0.8rem",
+                color: "var(--text-secondary)",
+                marginBottom: "20px",
+                border: "1px solid var(--border-muted)",
+              }}
+            >
+              <strong style={{ color: "var(--text-primary)", display: "block", marginBottom: "6px" }}>CSV Format Rules:</strong>
+              <ul style={{ paddingLeft: "16px", margin: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
+                <li>Columns must be exactly: <code>question,option_a,option_b,option_c,option_d,correct_option,marks</code></li>
+                <li><code>correct_option</code> correct answer key values must be: <strong>A, B, C, or D</strong>.</li>
+                <li><code>marks</code> must be an integer (e.g. 1, 2).</li>
+              </ul>
+            </div>
+
+            <button
+              onClick={() => {
+                const prompt = `Act as an expert syllabus-to-exam parser and generator. I need you to generate a Surprise Test question bank in CSV format. 
+Please prompt me to enter my Topic, Syllabus, or Questions first. 
+
+Once I provide it, you must generate a clean, valid CSV output representing multiple-choice questions (MCQs) matching the following exact columns:
+question,option_a,option_b,option_c,option_d,correct_option,marks
+
+Ensure:
+- correct_option is exactly A, B, C, or D.
+- marks is an integer (1 by default).
+- Output ONLY the raw CSV content inside a markdown code block so I can copy it directly. Do not include extra conversational text.
+
+Please start by asking me: "Aap kis topic/syllabus par test generate karna chahte hain? Please topic upload ya enter karein."`;
+
+                navigator.clipboard.writeText(prompt);
+                alert("Automated Gemini Prompt copied to clipboard! Redirecting to Gemini...");
+                window.open("https://gemini.google.com", "_blank");
+                setShowGeminiModal(false);
+              }}
+              className="btn-primary"
+              style={{
+                backgroundColor: "var(--faculty-accent)",
+                color: "#ffffff",
+                fontWeight: "bold",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                boxShadow: "0 0 16px rgba(79, 70, 229, 0.25)"
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 2L14.7 9.3L22 12L14.7 14.7L12 22L9.3 14.7L2 12L9.3 9.3L12 2Z" />
+              </svg>
+              Redirect to Gemini & Copy Prompt
+            </button>
           </div>
         </div>
       )}

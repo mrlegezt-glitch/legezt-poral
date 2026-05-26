@@ -275,6 +275,7 @@ model ExamSubmission {
   status         String          @default("ongoing") // "ongoing", "submitted", "terminated"
   startedAt      DateTime        @default(now())
   submittedAt    DateTime?
+  isPublished    Boolean         @default(false)
   anomaliesLog   AnomalyRecord[]
 
   exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)

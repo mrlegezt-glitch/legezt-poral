@@ -57,6 +57,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 branch: s.student.branch,
                 status: s.status, // "ongoing", "submitted", "terminated"
                 score: s.score,
+                isPublished: s.isPublished,
                 startedAt: s.startedAt,
                 submittedAt: s.submittedAt,
                 anomalies: s.anomaliesLog.map((a) => ({
