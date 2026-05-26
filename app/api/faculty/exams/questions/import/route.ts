@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     
     // Lenient helper to match common headers
     const findIndex = (variations: string[]) => {
-      return headers.findIndex(h => variations.some(v => h === v || h.includes(v)));
+      return headers.findIndex((h: string) => variations.some(v => h === v || h.includes(v)));
     };
 
     const idx = {
