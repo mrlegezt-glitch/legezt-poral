@@ -10,7 +10,27 @@ export async function GET() {
     where: { facultyId: session.userId, isActive: true },
     include: {
       student: {
-        select: { id: true, fullName: true, email: true, year: true, branch: true, enrollmentNo: true, phone: true, status: true, profilePhotoUrl: true, lastLoginAt: true },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          year: true,
+          branch: true,
+          enrollmentNo: true,
+          phone: true,
+          status: true,
+          profilePhotoUrl: true,
+          lastLoginAt: true,
+          examSubmissions: {
+            include: {
+              exam: {
+                select: { title: true }
+              },
+              anomaliesLog: true
+            },
+            orderBy: { startedAt: "desc" }
+          }
+        },
       },
     },
   });
