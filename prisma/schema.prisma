@@ -39,6 +39,7 @@ model PortalStudent {
   attendance       AttendanceRecord[]
   submissions      AssignmentSubmission[]
   examSubmissions  ExamSubmission[]
+  serviceRequests  PortalServiceRequest[]
 }
 
 // ─── PORTAL FACULTY ────────────────────────────────────────────────────────────
@@ -288,4 +289,18 @@ model AnomalyRecord {
   screenshot   String?        // Base64 or host URL
 
   submission   ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model PortalServiceRequest {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  studentId      String        @db.ObjectId
+  title          String
+  description    String
+  category       String
+  status         String        @default("PENDING") // PENDING, APPROVED, COMPLETED, REJECTED
+  refNo          String        @unique
+  submissionDate DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+
+  student        PortalStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }

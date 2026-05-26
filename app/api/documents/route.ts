@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     let docs = await prisma.portalDocument.findMany({
       where: {
         OR: orConditions,
-        ...(category ? { category } : {}),
+        ...(category ? { category: { equals: category, mode: "insensitive" } } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     const adminDocs = await prisma.document.findMany({
       where: {
         isPublic: true,
-        ...(category ? { category } : {}),
+        ...(category ? { category: { equals: category, mode: "insensitive" } } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 100,
