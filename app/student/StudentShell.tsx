@@ -9,6 +9,7 @@ const navItems = [
   { href: "/student/dashboard", label: "Dashboard" },
   { href: "/student/messages", label: "Messages" },
   { href: "/student/documents", label: "Documents" },
+  { href: "/student/exams", label: "Surprise Exams" },
   { href: "/student/profile", label: "Profile" },
 ];
 

@@ -209,6 +209,31 @@ export default function FacultyExamsPage() {
     }
   };
 
+  const handleRedirectToGemini = () => {
+    if (!csvText) {
+      alert("No CSV or text content loaded to format. Please upload or paste data first.");
+      return;
+    }
+    const prompt = `Act as an expert data formatter. The attached question data contains structural anomalies, invalid formats, or missing headers that break a strict CSV validator.
+
+Please analyze the data below and repair it. Convert it into a clean, valid CSV format with the following exact headers (do not modify these headers):
+question,option_a,option_b,option_c,option_d,correct_option,marks
+
+Ensure:
+- Headers are EXACTLY as specified above.
+- Options are split correctly.
+- correct_option is exactly A, B, C, or D.
+- marks is an integer (use 1 as default if missing).
+- Output ONLY the clean CSV content without any conversational intros or markdown wrapper blocks.
+
+Here is the broken data:
+${csvText}`;
+
+    navigator.clipboard.writeText(prompt);
+    alert("Smart formatting prompt & your broken CSV have been successfully copied to your clipboard!\n\nWe are now redirecting you to Google Gemini. Simply press Ctrl+V to paste the prompt in the input box, get your perfectly formatted CSV file content, and copy it back here!");
+    window.open("https://gemini.google.com", "_blank");
+  };
+
   // Start Live monitoring SSE connection
   const handleStartMonitor = (exam: Exam) => {
     setActiveMonitorExam(exam);
@@ -693,19 +718,69 @@ export default function FacultyExamsPage() {
                     Once a valid question CSV is uploaded, a parsed questions list will populate here for review before transactional database lock.
                   </p>
                   {correctionError && !correctedQuestions && (
-                    <div
-                      style={{
-                        marginTop: "16px",
-                        background: "var(--error-bg)",
-                        border: "1px solid var(--error-border)",
-                        borderRadius: "6px",
-                        padding: "10px 14px",
-                        fontSize: "0.8rem",
-                        color: "var(--error)",
-                        width: "100%",
-                      }}
-                    >
-                      {correctionError}
+                    <div style={{ width: "100%", marginTop: "16px" }}>
+                      <div
+                        style={{
+                          background: "var(--error-bg)",
+                          border: "1px solid var(--error-border)",
+                          borderRadius: "6px",
+                          padding: "10px 14px",
+                          fontSize: "0.8rem",
+                          color: "var(--error)",
+                          textAlign: "left",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        {correctionError}
+                      </div>
+                      <div
+                        style={{
+                          background: "rgba(79, 70, 229, 0.03)",
+                          border: "1px dashed rgba(79, 70, 229, 0.2)",
+                          borderRadius: "8px",
+                          padding: "16px",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "1.2rem" }}>✨</span>
+                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--faculty-accent)" }}>
+                            GEMINI FORMATTING ASSISTANT
+                          </span>
+                        </div>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", margin: 0 }}>
+                          Auto-Correction bypassed. Click below to copy your raw sheet and format it with Google Gemini in one click.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleRedirectToGemini}
+                          className="btn-primary"
+                          style={{
+                            width: "100%",
+                            padding: "10px 16px",
+                            fontSize: "0.8rem",
+                            borderRadius: "6px",
+                            backgroundColor: "var(--faculty-accent)",
+                            color: "#ffffff",
+                            fontWeight: "bold",
+                            border: "none",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                            boxShadow: "0 0 10px rgba(79, 70, 229, 0.15)"
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                            <path d="M12 2L14.7 9.3L22 12L14.7 14.7L12 22L9.3 14.7L2 12L9.3 9.3L12 2Z" />
+                          </svg>
+                          Format broken CSV with Gemini
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -966,11 +1041,44 @@ export default function FacultyExamsPage() {
               </button>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <h4 style={{ fontSize: "0.95rem", fontWeight: 700 }}>{selectedStudentLogs.studentName}</h4>
-              <p style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginTop: "2px" }}>
-                Enrollment: {selectedStudentLogs.enrollmentNo} · Branch: {selectedStudentLogs.branch}
-              </p>
+            <div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h4 style={{ fontSize: "0.95rem", fontWeight: 700 }}>{selectedStudentLogs.studentName}</h4>
+                <p style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginTop: "2px" }}>
+                  Enrollment: {selectedStudentLogs.enrollmentNo} · Branch: {selectedStudentLogs.branch}
+                </p>
+              </div>
+              {(selectedStudentLogs.status === "terminated" || selectedStudentLogs.status === "submitted") && (
+                <button
+                  onClick={async () => {
+                    if (confirm(`Are you sure you want to reset the exam session for ${selectedStudentLogs.studentName}?\n\nThis will delete their current terminated/submitted sheet, allowing them to re-take the exam fresh.`)) {
+                      try {
+                        const res = await fetch(`/api/faculty/exams/submissions/${selectedStudentLogs.id}/reset`, { method: "POST" });
+                        if (res.ok) {
+                          alert("Exam session has been reset successfully! The student can now re-take the exam.");
+                          setSelectedStudentLogs(null);
+                        } else {
+                          alert("Failed to reset session.");
+                        }
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }
+                  }}
+                  className="btn-outline"
+                  style={{
+                    borderColor: "var(--error)",
+                    color: "var(--error)",
+                    fontSize: "0.75rem",
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Reset & Unlock Exam
+                </button>
+              )}
             </div>
 
             <div style={{ flex: 1, overflowY: "auto" }}>

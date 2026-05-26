@@ -154,7 +154,64 @@ export default function PortalLandingPage() {
         </a>
       </div>
 
-      <div style={{ marginTop: "50px", textAlign: "center", position: "relative", zIndex: 1 }}>
+      {/* LeGeZt Student Premium App Download Section */}
+      <div 
+        className="glass-panel"
+        style={{
+          marginTop: "48px",
+          borderRadius: "16px",
+          padding: "36px",
+          maxWidth: "730px",
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "24px",
+          background: "rgba(22, 25, 34, 0.4)",
+          border: "1.5px solid rgba(14, 165, 233, 0.15)",
+          boxShadow: "0 0 24px rgba(14, 165, 233, 0.04)",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: "280px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+            <span style={{ fontSize: "0.7rem", fontWeight: "bold", background: "rgba(14, 165, 233, 0.15)", color: "#0ea5e9", padding: "2px 8px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "1px" }}>
+              Secure Client Nodes
+            </span>
+            <span style={{ fontSize: "0.75rem", color: "var(--success)", fontWeight: "bold" }}>
+              ✓ Verified Stable v1.0.0
+            </span>
+          </div>
+          <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.45rem", fontWeight: 700, margin: "0 0 10px 0" }}>
+            LEGEZT STUDENT MOBILE APP
+          </h3>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", lineHeight: 1.6, margin: 0 }}>
+            Access peer messaging, syllabus documents, attendance summaries, and the Secure Surprise Examination System (SCSES) directly from your smartphone.
+          </p>
+        </div>
+        <div>
+          <a
+            href="/downloads/LeGeZt_Student_v1.0.0.apk"
+            download
+            className="portal-card-btn"
+            style={{
+              background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)",
+              color: "#ffffff",
+              border: "none",
+              padding: "14px 28px",
+              boxShadow: "0 4px 16px rgba(14, 165, 233, 0.3)",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Download Android APK
+          </a>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "40px", textAlign: "center", position: "relative", zIndex: 1 }}>
         <button 
           onClick={handleClearCollege} 
           className="btn-sm"

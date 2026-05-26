@@ -23,9 +23,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "CSV must contain a header row and at least one question" }, { status: 400 });
     }
 
-    const headers = rows[0].map((h: string) => h.toLowerCase().trim());
-    const requiredHeaders = ["question", "option_a", "option_b", "option_c", "option_d", "correct_option", "marks"];
-    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+    const headers = rows[0].map((h: string) => h.toLowerCase().trim().replace(/[\s_-]+/g, ''));
+    
+    // Lenient helper to match common headers
+    const findIndex = (variations: string[]) => {
+      return headers.findIndex(h => variations.some(v => h === v || h.includes(v)));
+    };
+
+    const idx = {
+      q: findIndex(["question", "problem", "qtext", "questiontext", "prob"]),
+      a: findIndex(["optiona", "opta", "opa", "alta", "a"]),
+      b: findIndex(["optionb", "optb", "opb", "altb", "b"]),
+      c: findIndex(["optionc", "optc", "opc", "altc", "c"]),
+      d: findIndex(["optiond", "optd", "opd", "altd", "d"]),
+      co: findIndex(["correctoption", "correctanswer", "correct", "answer", "ans", "correctopt"]),
+      m: findIndex(["marks", "mark", "weight", "points", "score", "pts"])
+    };
+
+    const missingHeaders: string[] = [];
+    if (idx.q === -1) missingHeaders.push("question");
+    if (idx.a === -1) missingHeaders.push("option_a");
+    if (idx.b === -1) missingHeaders.push("option_b");
+    if (idx.c === -1) missingHeaders.push("option_c");
+    if (idx.d === -1) missingHeaders.push("option_d");
+    if (idx.co === -1) missingHeaders.push("correct_option");
 
     if (missingHeaders.length > 0) {
       // Try to use Gemini to fix it automatically
@@ -37,17 +58,6 @@ export async function POST(req: NextRequest) {
         corrected
       }, { status: 422 });
     }
-
-    // Map headers to indexes
-    const idx = {
-      q: headers.indexOf("question"),
-      a: headers.indexOf("option_a"),
-      b: headers.indexOf("option_b"),
-      c: headers.indexOf("option_c"),
-      d: headers.indexOf("option_d"),
-      co: headers.indexOf("correct_option"),
-      m: headers.indexOf("marks")
-    };
 
     const questions: any[] = [];
     const errors: string[] = [];
