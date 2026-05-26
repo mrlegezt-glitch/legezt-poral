@@ -40,6 +40,7 @@ model PortalStudent {
   submissions      AssignmentSubmission[]
   examSubmissions  ExamSubmission[]
   serviceRequests  PortalServiceRequest[]
+  notifications    Notification[]
 }
 
 // ─── PORTAL FACULTY ────────────────────────────────────────────────────────────
@@ -277,6 +278,7 @@ model ExamSubmission {
   submittedAt    DateTime?
   isPublished    Boolean         @default(false)
   anomaliesLog   AnomalyRecord[]
+  answers        StudentAnswer[]
 
   exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
   student        PortalStudent   @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -305,3 +307,25 @@ model PortalServiceRequest {
 
   student        PortalStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
+
+model Notification {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String        @db.ObjectId
+  title     String
+  message   String
+  isRead    Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  student   PortalStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model StudentAnswer {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId String         @db.ObjectId
+  questionId   String         @db.ObjectId
+  selectedKey  String         // "A", "B", "C", "D"
+  isCorrect    Boolean
+
+  submission   ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+

@@ -404,6 +404,25 @@ export default function StudentResultsPage() {
                         />
                       </div>
                     </div>
+
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+                      <a
+                        href={`/student/results/${r.id}`}
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          color: "#89b4fa",
+                          textDecoration: "none",
+                          border: "1px solid rgba(137, 180, 250, 0.3)",
+                          padding: "6px 12px",
+                          borderRadius: "6px",
+                          background: "rgba(137, 180, 250, 0.05)",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        Review Test Answers 🔍
+                      </a>
+                    </div>
                   </div>
                 );
               })}

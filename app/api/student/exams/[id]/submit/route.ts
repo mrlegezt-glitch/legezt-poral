@@ -25,12 +25,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     let finalScore = 0;
     const questions = submission.exam.questions;
 
-    // Check answers
+    const studentAnswersData: any[] = [];
     if (!forceTerminate && answers && Array.isArray(answers)) {
       answers.forEach((ans: any) => {
         const q = questions.find(item => item.id === ans.questionId);
-        if (q && q.correctOption.toUpperCase() === ans.selectedKey.toUpperCase()) {
-          finalScore += q.marks;
+        if (q) {
+          const isCorrect = q.correctOption.toUpperCase() === ans.selectedKey.toUpperCase();
+          if (isCorrect) {
+            finalScore += q.marks;
+          }
+          studentAnswersData.push({
+            questionId: ans.questionId,
+            selectedKey: ans.selectedKey.toUpperCase(),
+            isCorrect: isCorrect
+          });
         }
       });
     }
@@ -40,7 +48,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       data: {
         score: finalScore,
         status: forceTerminate ? "terminated" : "submitted",
-        submittedAt: new Date()
+        submittedAt: new Date(),
+        answers: {
+          create: studentAnswersData
+        }
       }
     });
 

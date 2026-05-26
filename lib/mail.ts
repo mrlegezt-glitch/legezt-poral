@@ -71,3 +71,79 @@ export async function sendOtpEmail(email: string, otp: string, fullName: string)
   });
 }
 
+export async function sendExamResultEmail(
+  email: string,
+  examTitle: string,
+  score: number,
+  maxScore: number,
+  studentName: string,
+  wrongAnswers: Array<{ question: string; selected: string; correct: string }>
+) {
+  const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  const isPass = pct >= 50;
+  const statusText = isPass ? "Pass ho gaye hain!" : "Thodi aur mehnat ki zaroorat hai.";
+
+  let wrongAnswersHtml = "";
+  if (wrongAnswers.length > 0) {
+    wrongAnswersHtml = `
+      <h3 style="color: #ef4444; margin-top: 25px;">Incorrect Answers Analysis (Kya galtiyaan hui?):</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+          <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 10px; text-align: left; font-size: 13px; color: #64748b;">Question</th>
+            <th style="padding: 10px; text-align: center; font-size: 13px; color: #64748b; width: 80px;">Your Choice</th>
+            <th style="padding: 10px; text-align: center; font-size: 13px; color: #64748b; width: 80px;">Correct Key</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${wrongAnswers.map((wa, idx) => `
+            <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${idx % 2 === 0 ? "#ffffff" : "#f8fafc"};">
+              <td style="padding: 12px 10px; font-size: 13px; color: #334155;">${wa.question}</td>
+              <td style="padding: 12px 10px; font-size: 13px; text-align: center; color: #ef4444; font-weight: bold;">${wa.selected}</td>
+              <td style="padding: 12px 10px; font-size: 13px; text-align: center; color: #10b981; font-weight: bold;">${wa.correct}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  } else {
+    wrongAnswersHtml = `
+      <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 15px; margin-top: 25px; text-align: center;">
+        <p style="color: #16a34a; font-weight: bold; margin: 0;">🎉 Congratulations! Aapne saare answers sahi diye hain. No mistakes found!</p>
+      </div>
+    `;
+  }
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+      <h2 style="color: #0ea5e9; text-align: center;">Surprise Test Result - LEGEZT Portal</h2>
+      <p>Hello <strong>${studentName}</strong>,</p>
+      <p>Aapke faculty ne surprise test <strong>"${examTitle}"</strong> ke results publish kar diye hain.</p>
+      
+      <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+        <span style="font-size: 14px; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 0.5px;">Your Final Score</span>
+        <h1 style="font-size: 48px; color: ${isPass ? "#10b981" : "#ef4444"}; margin: 10px 0 5px 0; font-weight: 800;">${score} / ${maxScore}</h1>
+        <span style="font-size: 18px; font-weight: bold; color: ${isPass ? "#10b981" : "#ef4444"};">${pct}% (${statusText})</span>
+      </div>
+
+      ${wrongAnswersHtml}
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="${process.env.NEXTAUTH_URL || "https://portal.mrlegezt.me"}/student/results" style="background-color: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Detailed Performance Sheet</a>
+      </div>
+
+      <p style="margin-top: 30px; font-size: 0.875rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+        Sent automatically from <strong>info@mrlegezt.me</strong>. System proctoring was active during the test.
+      </p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"LEGEZT Portal" <${user}>`,
+    to: email,
+    subject: `Surprise Test Result: ${examTitle} - [${score}/${maxScore}]`,
+    text: `Hello ${studentName},\n\nYour result for the surprise test "${examTitle}" is out: ${score}/${maxScore} (${pct}%).\n\nPlease check the portal for a detailed performance review.\n\nThank you,\nLEGEZT Portal team`,
+    html,
+  });
+}
+
