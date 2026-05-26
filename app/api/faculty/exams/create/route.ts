@@ -41,6 +41,46 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Fetch faculty info
+    const faculty = await prisma.portalFaculty.findUnique({
+      where: { id: session.userId }
+    });
+    const facultyName = faculty?.fullName || "Faculty Advisor";
+
+    // Find all mapped students
+    const mappings = await prisma.facultyStudentMap.findMany({
+      where: { facultyId: session.userId, isActive: true },
+      include: { student: true }
+    });
+
+    // Send notifications and emails asynchronously to avoid blocking the HTTP response
+    import("@/lib/mail").then(async ({ sendExamActiveEmail }) => {
+      const notifMessage = `Naya surprise test "${exam.title}" active ho gaya hai. Duration: ${exam.durationMins} mins. Jaldi se test attempt karein!`;
+      for (const map of mappings) {
+        try {
+          // 1. Create in-app notification
+          await prisma.notification.create({
+            data: {
+              studentId: map.studentId,
+              title: "New Surprise Test Active! ⚡",
+              message: notifMessage
+            }
+          });
+
+          // 2. Dispatch email
+          await sendExamActiveEmail(
+            map.student.email,
+            exam.title,
+            exam.durationMins,
+            map.student.fullName,
+            facultyName
+          );
+        } catch (err) {
+          console.error(`Failed to notify student ${map.studentId} about active exam:`, err);
+        }
+      }
+    }).catch(err => console.error("Failed to load mail helper for active exam notification:", err));
+
     return NextResponse.json({ success: true, exam });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

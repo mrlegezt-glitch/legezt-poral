@@ -147,3 +147,45 @@ export async function sendExamResultEmail(
   });
 }
 
+export async function sendExamActiveEmail(
+  email: string,
+  examTitle: string,
+  durationMins: number,
+  studentName: string,
+  facultyName: string
+) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+      <h2 style="color: #f59e0b; text-align: center;">⚡ Alert: New Surprise Test Active!</h2>
+      <p>Hello <strong>${studentName}</strong>,</p>
+      <p>Aapke faculty advisor <strong>${facultyName}</strong> ne ek naya surprise test active kiya hai.</p>
+      
+      <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+        <span style="font-size: 14px; text-transform: uppercase; color: #b45309; font-weight: bold; letter-spacing: 0.5px;">Surprise Test Details</span>
+        <h2 style="color: #b45309; margin: 10px 0 5px 0; font-weight: 800;">"${examTitle}"</h2>
+        <span style="font-size: 15px; font-weight: bold; color: #d97706;">Duration: ${durationMins} minutes</span>
+      </div>
+
+      <p style="color: #ef4444; font-weight: bold; text-align: center; font-size: 15px;">
+        ⚠️ Warning: Please go to the student portal or open the mobile app immediately to attempt this exam before it closes.
+      </p>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="${process.env.NEXTAUTH_URL || "https://portal.mrlegezt.me"}" style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Login & Attempt Exam</a>
+      </div>
+
+      <p style="margin-top: 30px; font-size: 0.875rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+        Sent automatically from <strong>info@mrlegezt.me</strong>.
+      </p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"LEGEZT Portal" <${user}>`,
+    to: email,
+    subject: `⚡ ALERT: Surprise Test Active - ${examTitle}`,
+    text: `Hello ${studentName},\n\nA new surprise test "${examTitle}" is active. Duration: ${durationMins} mins. Please login immediately to attempt the test.\n\nThank you,\nLEGEZT Portal team`,
+    html,
+  });
+}
+
