@@ -237,17 +237,37 @@ ${csvText}`;
     window.open("https://gemini.google.com", "_blank");
   };
 
-  // Start Live monitoring SSE connection
+  // Start Live monitoring SSE connection with Polling Fallback
   const handleStartMonitor = (exam: Exam) => {
     setActiveMonitorExam(exam);
     setView("MONITOR");
     setMonitorConnected(true);
 
+    let sseConnected = false;
     const sse = new EventSource(`/api/faculty/exams/${exam.id}/monitor`);
     eventSourceRef.current = sse;
 
+    // Fallback polling interval to guarantee live feedback on buffered networks
+    const pollInterval = setInterval(async () => {
+      if (!sseConnected) {
+        try {
+          const res = await fetch(`/api/faculty/exams/${exam.id}/monitor`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+              setSubmissions(data.submissions || []);
+            }
+          }
+        } catch (e) {
+          console.error("Polling fallback fetch failed:", e);
+        }
+      }
+    }, 3000);
+
     sse.onmessage = (event) => {
       try {
+        sseConnected = true;
+        setMonitorConnected(true);
         const data = JSON.parse(event.data);
         if (data.success) {
           setSubmissions(data.submissions || []);
@@ -258,13 +278,20 @@ ${csvText}`;
     };
 
     sse.onerror = (err) => {
-      console.error("SSE connection dropped:", err);
+      console.error("SSE connection dropped, falling back to polling:", err);
+      sseConnected = false;
       setMonitorConnected(false);
     };
+
+    // Store interval on the EventSource object for cleanup
+    (sse as any)._intervalId = pollInterval;
   };
 
   const handleCloseMonitor = () => {
     if (eventSourceRef.current) {
+      if ((eventSourceRef.current as any)._intervalId) {
+        clearInterval((eventSourceRef.current as any)._intervalId);
+      }
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }

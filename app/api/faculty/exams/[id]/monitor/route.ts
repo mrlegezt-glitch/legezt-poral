@@ -22,6 +22,51 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return new Response("Exam not found or unauthorized", { status: 404 });
     }
 
+    const accept = req.headers.get("accept");
+    const isSSE = accept && accept.includes("text/event-stream");
+
+    if (!isSSE) {
+      // Standard JSON Fetch fallback to bypass intermediate buffer blocks
+      const submissions = await prisma.examSubmission.findMany({
+        where: { examId },
+        include: {
+          student: {
+            select: {
+              fullName: true,
+              enrollmentNo: true,
+              email: true,
+              branch: true,
+            }
+          },
+          anomaliesLog: {
+            orderBy: { timestamp: "desc" }
+          }
+        },
+        orderBy: { startedAt: "desc" }
+      });
+
+      return NextResponse.json({
+        success: true,
+        submissions: submissions.map((s) => ({
+          id: s.id,
+          studentName: s.student.fullName,
+          enrollmentNo: s.student.enrollmentNo,
+          email: s.student.email,
+          branch: s.student.branch,
+          status: s.status, // "ongoing", "submitted", "terminated"
+          score: s.score,
+          isPublished: s.isPublished,
+          startedAt: s.startedAt,
+          submittedAt: s.submittedAt,
+          anomalies: s.anomaliesLog.map((a) => ({
+            id: a.id,
+            type: a.type,
+            timestamp: a.timestamp
+          }))
+        }))
+      });
+    }
+
     const responseStream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder();
@@ -92,7 +137,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
-        "Connection": "keep-alive"
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no"
       }
     });
   } catch (error: any) {
