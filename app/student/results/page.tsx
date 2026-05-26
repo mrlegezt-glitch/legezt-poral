@@ -15,6 +15,7 @@ interface ExamResult {
 export default function StudentResultsPage() {
   const [results, setResults] = useState<ExamResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -57,18 +58,18 @@ export default function StudentResultsPage() {
     if (chronologicalResults.length === 0) return;
 
     // Styling configurations
-    const paddingLeft = 50;
-    const paddingRight = 30;
-    const paddingTop = 30;
+    const paddingLeft = 60;
+    const paddingRight = 40;
+    const paddingTop = 45;
     const paddingBottom = 40;
     const chartWidth = width - paddingLeft - paddingRight;
     const chartHeight = height - paddingTop - paddingBottom;
 
     // Draw Grid Lines & Y Axis Labels
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.lineWidth = 1;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.font = "11px Inter, sans-serif";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+    ctx.lineWidth = 1.5;
+    ctx.fillStyle = "rgba(205, 214, 244, 0.4)";
+    ctx.font = "bold 11px Inter, system-ui, sans-serif";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
 
@@ -79,7 +80,7 @@ export default function StudentResultsPage() {
       ctx.moveTo(paddingLeft, y);
       ctx.lineTo(width - paddingRight, y);
       ctx.stroke();
-      ctx.fillText(`${pct}%`, paddingLeft - 10, y);
+      ctx.fillText(`${pct}%`, paddingLeft - 15, y);
     }
 
     // Map data points
@@ -96,8 +97,8 @@ export default function StudentResultsPage() {
     // Draw gradient fill under the line
     if (points.length > 1) {
       const fillGradient = ctx.createLinearGradient(0, paddingTop, 0, paddingTop + chartHeight);
-      fillGradient.addColorStop(0, "rgba(79, 70, 229, 0.25)");
-      fillGradient.addColorStop(1, "rgba(79, 70, 229, 0.0)");
+      fillGradient.addColorStop(0, "rgba(99, 102, 241, 0.25)");
+      fillGradient.addColorStop(1, "rgba(99, 102, 241, 0.0)");
 
       ctx.fillStyle = fillGradient;
       ctx.beginPath();
@@ -109,8 +110,8 @@ export default function StudentResultsPage() {
     }
 
     // Draw the main trend line
-    ctx.strokeStyle = "#6366f1";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#89b4fa"; // TextSecondary color from Android Theme
+    ctx.lineWidth = 4;
     ctx.beginPath();
     points.forEach((p, idx) => {
       if (idx === 0) {
@@ -125,29 +126,29 @@ export default function StudentResultsPage() {
     points.forEach((p) => {
       // Glow dot
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 6, 0, 2 * Math.PI);
-      ctx.fillStyle = "#6366f1";
+      ctx.arc(p.x, p.y, 7, 0, 2 * Math.PI);
+      ctx.fillStyle = "#89b4fa";
       ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = "#0f111a"; // SurfaceDark background
       ctx.stroke();
 
       // Tooltip/label above dot
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 10px Inter, sans-serif";
+      ctx.font = "bold 10px Inter, system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`${Math.round(p.pct)}%`, p.x, p.y - 12);
+      ctx.fillText(`${Math.round(p.pct)}%`, p.x, p.y - 14);
     });
 
     // Draw X Axis labels
-    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-    ctx.font = "9px Inter, sans-serif";
+    ctx.fillStyle = "rgba(205, 214, 244, 0.4)";
+    ctx.font = "bold 9px Inter, system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     points.forEach((p, idx) => {
       const truncatedLabel =
         p.label.length > 12 ? p.label.substring(0, 10) + "..." : p.label;
-      ctx.fillText(truncatedLabel, p.x, paddingTop + chartHeight + 10);
+      ctx.fillText(truncatedLabel, p.x, paddingTop + chartHeight + 12);
     });
   }, [loading, results]);
 
@@ -162,195 +163,354 @@ export default function StudentResultsPage() {
         )
       : 0;
 
+  const totalPointsScored = results.reduce((acc, curr) => acc + curr.score, 0);
+  const totalMaxPoints = results.reduce((acc, curr) => acc + curr.maxScore, 0);
+
   const performanceFeedback = () => {
-    if (avgPercentage >= 85) return { status: "Excellent", msg: "Aapka performance bohot badhiya hai! Keep maintaining this level.", color: "var(--success)" };
-    if (avgPercentage >= 65) return { status: "Good Effort", msg: "Aap achha kar rahe hain, thodi aur regular practice se grades aur behtar ho sakte hain.", color: "var(--faculty-accent)" };
-    return { status: "Focus Needed", msg: "Aapko concepts par thoda aur dhyan dene ki zaroorat hai. Faculty advisory se zaroor consult karein.", color: "var(--error)" };
+    if (avgPercentage >= 85) return { status: "Excellent", msg: "Aapka performance bohot badhiya hai! Keep maintaining this level.", color: "#a6e3a1", bg: "rgba(166, 227, 161, 0.1)" };
+    if (avgPercentage >= 65) return { status: "Good Effort", msg: "Aap achha kar rahe hain, thodi aur regular practice se grades aur behtar ho sakte hain.", color: "#89b4fa", bg: "rgba(137, 180, 250, 0.1)" };
+    return { status: "Focus Needed", msg: "Aapko concepts par thoda aur dhyan dene ki zaroorat hai. Faculty advisory se zaroor consult karein.", color: "#f38ba8", bg: "rgba(243, 139, 168, 0.1)" };
   };
 
   const feedback = performanceFeedback();
 
+  // Proctor status score (how many terminated vs total)
+  const terminatedCount = results.filter((r) => r.status === "terminated").length;
+  const proctorSafetyRating =
+    results.length > 0 ? Math.round(((results.length - terminatedCount) / results.length) * 100) : 100;
+
   return (
-    <div className="portal-content" style={{ padding: "30px 40px" }}>
-      <div style={{ marginBottom: "30px" }}>
-        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.8rem" }}>
-          SURPRISE EXAM RESULTS
-        </h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginTop: "4px" }}>
-          Analyze your performance metrics, auto-graded scores, and cumulative trend analysis.
-        </p>
+    <div
+      style={{
+        padding: "30px 40px",
+        backgroundColor: "#07080d",
+        minHeight: "100vh",
+        color: "#cdd6f4",
+        fontFamily: "'Outfit', 'Inter', system-ui, sans-serif",
+      }}
+    >
+      {/* Header section with profile analytics vibe */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "35px",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
+          paddingBottom: "20px",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 800,
+              fontSize: "2rem",
+              letterSpacing: "-0.5px",
+              background: "linear-gradient(90deg, #89b4fa, #f38ba8)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              margin: 0,
+            }}
+          >
+            ACADEMIC PERFORMANCE SHEET
+          </h1>
+          <p style={{ color: "#a6adc8", fontSize: "0.85rem", marginTop: "6px" }}>
+            Real-time surprise test analytics, score progression, and faculty feedback records.
+          </p>
+        </div>
+
+        {results.length > 0 && (
+          <div
+            style={{
+              background: "rgba(137, 180, 250, 0.08)",
+              border: "1px solid rgba(137, 180, 250, 0.2)",
+              padding: "10px 20px",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: feedback.color, boxShadow: `0 0 10px ${feedback.color}` }} />
+            <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#89b4fa" }}>
+              ACADEMIC STANDING: {feedback.status.toUpperCase()}
+            </span>
+          </div>
+        )}
       </div>
 
       {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "60px" }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "80px" }}>
           <div className="spinner" />
         </div>
       ) : results.length === 0 ? (
         <div
           style={{
-            background: "var(--bg-panel)",
-            border: "1px solid var(--border-muted)",
-            borderRadius: "12px",
-            padding: "60px",
+            background: "#0f111a",
+            border: "1px dashed rgba(255,255,255,0.1)",
+            borderRadius: "16px",
+            padding: "80px 40px",
             textAlign: "center",
+            maxWidth: "600px",
+            margin: "40px auto 0",
           }}
         >
-          <div
-            style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "50%",
-              backgroundColor: "var(--bg-deep)",
-              margin: "0 auto 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            📊
-          </div>
-          <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "8px" }}>No Published Results</h3>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", maxWidth: "450px", margin: "0 auto" }}>
-            Aapne abhi tak koi test submit nahi kiya hai ya fir faculty ne abhi tak results upload/publish nahi kiye hain.
+          <div style={{ fontSize: "3rem", marginBottom: "20px" }}>📊</div>
+          <h3 style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: "10px" }}>No Surprise Test Results</h3>
+          <p style={{ color: "#a6adc8", fontSize: "0.85rem", lineHeight: "1.6" }}>
+            Aapne abhi tak koi test submit nahi kiya hai ya fir faculty ne abhi tak surprise exams ke results upload/publish nahi kiye hain. Jaise hi results release honge, wahi data yahan display ho jayega.
           </p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "30px", alignItems: "start" }}>
-          {/* Main List and Graph */}
+        <div style={{ display: "grid", gridTemplateColumns: "1.8fr 1fr", gap: "30px", alignItems: "start" }}>
+          {/* Main Content Side: Charts and Individual Test Cards */}
           <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
-            {/* Graph Card */}
+            {/* High-End interactive trend chart */}
             <div
-              className="glass-panel"
               style={{
-                background: "var(--bg-panel)",
-                borderRadius: "12px",
+                background: "#0f111a",
+                borderRadius: "16px",
                 padding: "24px",
-                border: "1px solid var(--border-muted)",
+                border: "1.5px solid rgba(255, 255, 255, 0.05)",
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
               }}
             >
-              <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "20px" }}>
-                Performance Trend Chart
-              </h3>
-              <div style={{ width: "100%", height: "240px", position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>📈</span> Performance Trend Chart
+                </h3>
+                <span style={{ fontSize: "0.75rem", color: "#a6adc8" }}>Chronological Progression</span>
+              </div>
+              <div style={{ width: "100%", height: "250px", position: "relative" }}>
                 <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
               </div>
             </div>
 
-            {/* Results Table */}
-            <div className="data-table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Exam Name</th>
-                    <th>Score Obtained</th>
-                    <th>Percentage</th>
-                    <th>Infraction Status</th>
-                    <th>Submission Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((r) => {
-                    const pct = r.maxScore > 0 ? Math.round((r.score / r.maxScore) * 100) : 0;
-                    return (
-                      <tr key={r.id}>
-                        <td style={{ fontWeight: 600 }}>{r.examTitle}</td>
-                        <td>
-                          {r.score} / {r.maxScore}
-                        </td>
-                        <td>
-                          <span style={{ fontWeight: 700, color: pct >= 50 ? "var(--success)" : "var(--error)" }}>
-                            {pct}%
+            {/* List Header */}
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "10px 0 0", color: "#ffffff" }}>
+              📝 Surprise Tests Taken ({results.length})
+            </h3>
+
+            {/* Premium Cards List (matching the app's Results items instead of basic table) */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {results.map((r) => {
+                const pct = r.maxScore > 0 ? Math.round((r.score / r.maxScore) * 100) : 0;
+                const isPass = pct >= 50;
+                const isTerminated = r.status === "terminated";
+                const isCardHovered = hoveredCard === r.id;
+
+                return (
+                  <div
+                    key={r.id}
+                    onMouseEnter={() => setHoveredCard(r.id)}
+                    onMouseLeave={() => setHoveredCard(null)}
+                    style={{
+                      background: "#0f111a",
+                      borderRadius: "16px",
+                      padding: "20px",
+                      border: isCardHovered
+                        ? `1.5px solid ${isTerminated ? "#f38ba8" : "#89b4fa"}`
+                        : "1.5px solid rgba(255, 255, 255, 0.05)",
+                      transform: isCardHovered ? "translateY(-3px)" : "translateY(0)",
+                      boxShadow: isCardHovered
+                        ? `0 10px 20px rgba(0, 0, 0, 0.3), 0 0 15px ${isTerminated ? "rgba(243, 139, 168, 0.1)" : "rgba(137, 180, 250, 0.1)"}`
+                        : "none",
+                      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "14px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "10px",
+                            backgroundColor: isTerminated ? "rgba(243, 139, 168, 0.12)" : "rgba(137, 180, 250, 0.12)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.2rem",
+                          }}
+                        >
+                          📄
+                        </div>
+                        <div>
+                          <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#ffffff", margin: 0 }}>
+                            {r.examTitle}
+                          </h4>
+                          <span style={{ fontSize: "0.75rem", color: "#a6adc8", marginTop: "3px", display: "inline-block" }}>
+                            Submitted: {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : "-"}
                           </span>
-                        </td>
-                        <td>
-                          <span
-                            className="badge"
-                            style={{
-                              backgroundColor: r.status === "terminated" ? "rgba(220, 38, 38, 0.1)" : "rgba(22, 163, 74, 0.1)",
-                              color: r.status === "terminated" ? "var(--error)" : "var(--success)",
-                              borderColor: "transparent",
-                              fontSize: "0.65rem",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {r.status === "terminated" ? "TERMINATED" : "SAFE"}
-                          </span>
-                        </td>
-                        <td>{r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : "-"}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+
+                      {/* Status badge matching Android app */}
+                      <span
+                        style={{
+                          backgroundColor: isTerminated
+                            ? "rgba(243, 139, 168, 0.12)"
+                            : isPass
+                            ? "rgba(166, 227, 161, 0.12)"
+                            : "rgba(243, 139, 168, 0.12)",
+                          color: isTerminated ? "#f38ba8" : isPass ? "#a6e3a1" : "#f38ba8",
+                          fontSize: "0.7rem",
+                          fontWeight: "bold",
+                          textTransform: "uppercase",
+                          padding: "6px 14px",
+                          borderRadius: "8px",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        {isTerminated ? "TERMINATED" : isPass ? "PASSED" : "FAILED"}
+                      </span>
+                    </div>
+
+                    {/* Progress score bar metric */}
+                    <div style={{ marginTop: "4px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          fontSize: "0.8rem",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        <span style={{ color: "#a6adc8" }}>
+                          Score: <strong style={{ color: "#ffffff" }}>{r.score}</strong> / {r.maxScore}
+                        </span>
+                        <strong style={{ color: isPass ? "#a6e3a1" : "#f38ba8" }}>{pct}%</strong>
+                      </div>
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "6px",
+                          backgroundColor: "rgba(255, 255, 255, 0.05)",
+                          borderRadius: "3px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${pct}%`,
+                            height: "100%",
+                            borderRadius: "3px",
+                            backgroundColor: isTerminated ? "#f38ba8" : isPass ? "#a6e3a1" : "#f38ba8",
+                            boxShadow: `0 0 10px ${isTerminated ? "#f38ba8" : isPass ? "#a6e3a1" : "#f38ba8"}`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Performance Summary Sidebar */}
-          <div
-            className="glass-panel"
-            style={{
-              background: "var(--bg-panel)",
-              borderRadius: "12px",
-              padding: "30px",
-              border: "1px solid var(--border-muted)",
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-            }}
-          >
-            <h3 style={{ fontSize: "1.1rem", fontWeight: 700 }}>Summary</h3>
+          {/* Sidebar Area: Overall Cumulative Analysis Board */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "30px", position: "sticky", top: "30px" }}>
+            <div
+              style={{
+                background: "#0f111a",
+                borderRadius: "16px",
+                padding: "30px 24px",
+                border: "1.5px solid rgba(255, 255, 255, 0.05)",
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#ffffff", marginBottom: "24px", alignSelf: "flex-start" }}>
+                Cumulative Metrics
+              </h3>
 
-            {/* Score Ring Metric */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 0" }}>
+              {/* Progress ring UI simulation */}
               <div
                 style={{
-                  width: "120px",
-                  height: "120px",
+                  width: "140px",
+                  height: "140px",
                   borderRadius: "50%",
-                  border: "8px solid var(--bg-deep)",
-                  borderTopColor: "var(--faculty-accent)",
-                  borderRightColor: "var(--faculty-accent)",
+                  border: "10px solid rgba(255, 255, 255, 0.03)",
+                  borderTopColor: "#89b4fa",
+                  borderRightColor: "#89b4fa",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexDirection: "column",
+                  marginBottom: "24px",
+                  boxShadow: "0 0 20px rgba(137, 180, 250, 0.05)",
                 }}
               >
-                <span style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--text-primary)" }}>
+                <span style={{ fontSize: "2.2rem", fontWeight: 800, color: "#ffffff" }}>
                   {avgPercentage}%
                 </span>
-                <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: "bold" }}>
-                  Average Score
+                <span
+                  style={{
+                    fontSize: "0.65rem",
+                    color: "#a6adc8",
+                    textTransform: "uppercase",
+                    fontWeight: "bold",
+                    letterSpacing: "0.5px",
+                    marginTop: "2px",
+                  }}
+                >
+                  AVG SCORE
                 </span>
               </div>
-            </div>
 
-            <div style={{ borderTop: "1px solid var(--border-muted)", paddingTop: "20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "0.8rem" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Total Surprise Exams:</span>
-                <strong style={{ color: "var(--text-primary)" }}>{results.length}</strong>
+              {/* Stats board lists */}
+              <div
+                style={{
+                  width: "100%",
+                  borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+                  paddingTop: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "14px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                  <span style={{ color: "#a6adc8" }}>Total Exams Taken:</span>
+                  <strong style={{ color: "#ffffff" }}>{results.length}</strong>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                  <span style={{ color: "#a6adc8" }}>Total Points Accumulated:</span>
+                  <strong style={{ color: "#ffffff" }}>
+                    {totalPointsScored} / {totalMaxPoints}
+                  </strong>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                  <span style={{ color: "#a6adc8" }}>Proctor Integrity Score:</span>
+                  <strong style={{ color: proctorSafetyRating >= 80 ? "#a6e3a1" : "#f38ba8" }}>
+                    {proctorSafetyRating}% Safe
+                  </strong>
+                </div>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
-                <span style={{ color: "var(--text-secondary)" }}>Academic Standing:</span>
-                <strong style={{ color: feedback.color }}>{feedback.status}</strong>
-              </div>
-            </div>
 
-            {/* Hinglish Feedback */}
-            <div
-              style={{
-                backgroundColor: "var(--bg-deep)",
-                borderRadius: "8px",
-                padding: "16px",
-                borderLeft: `4px solid ${feedback.color}`,
-              }}
-            >
-              <h4 style={{ fontSize: "0.8rem", fontWeight: 700, marginBottom: "4px", color: "var(--text-primary)" }}>
-                FACULTY FEEDBACK
-              </h4>
-              <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: "1.4", margin: 0 }}>
-                {feedback.msg}
-              </p>
+              {/* Faculty feedback card in natural Hinglish */}
+              <div
+                style={{
+                  marginTop: "24px",
+                  backgroundColor: feedback.bg,
+                  borderRadius: "12px",
+                  padding: "16px",
+                  borderLeft: `4px solid ${feedback.color}`,
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                <h4 style={{ fontSize: "0.8rem", fontWeight: 800, marginBottom: "6px", color: "#ffffff", letterSpacing: "0.5px" }}>
+                  FACULTY FEEDBACK
+                </h4>
+                <p style={{ fontSize: "0.78rem", color: "#cdd6f4", lineHeight: "1.5", margin: 0 }}>
+                  {feedback.msg}
+                </p>
+              </div>
             </div>
           </div>
         </div>
