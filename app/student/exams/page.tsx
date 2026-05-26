@@ -31,7 +31,7 @@ export default function StudentExamsPage() {
 
   // Exam taking state
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<String, String>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeftSec, setTimeLeftSec] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [examConcluded, setExamConcluded] = useState<"submitted" | "terminated" | null>(null);
