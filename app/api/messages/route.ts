@@ -7,6 +7,9 @@ const sendSchema = z.object({
   content: z.string().min(1).max(2000),
   receiverId: z.string(),
   receiverRole: z.enum(["student", "faculty"]),
+  messageType: z.enum(["TEXT", "STICKER", "EMOJI"]).optional(),
+  parentMessageId: z.string().optional(),
+  stickerUrl: z.string().optional(),
 });
 
 // GET: Fetch conversation messages
@@ -31,6 +34,17 @@ export async function GET(req: NextRequest) {
         { senderFacultyId: session.userId, receiverStudentId: withId },
         { senderStudentId: withId, receiverFacultyId: session.userId },
       ],
+    },
+    include: {
+      parentMessage: {
+        select: {
+          id: true,
+          content: true,
+          messageType: true,
+          senderStudentId: true,
+          senderFacultyId: true,
+        }
+      }
     },
     orderBy: { createdAt: "asc" },
     take: 100,
@@ -62,14 +76,19 @@ export async function POST(req: NextRequest) {
   const parsed = sendSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
-  const { content, receiverId, receiverRole } = parsed.data;
+  const { content, receiverId, receiverRole, messageType, parentMessageId, stickerUrl } = parsed.data;
 
-  const data: Record<string, string> = { content };
+  const data: Record<string, any> = { 
+    content,
+    messageType: messageType ?? "TEXT",
+    stickerUrl: stickerUrl ?? null,
+    parentMessageId: parentMessageId ?? null
+  };
   if (session.role === "student") data.senderStudentId = session.userId;
   else data.senderFacultyId = session.userId;
   if (receiverRole === "student") data.receiverStudentId = receiverId;
   else data.receiverFacultyId = receiverId;
 
-  const message = await prisma.portalMessage.create({ data: data as never });
+  const message = await prisma.portalMessage.create({ data: data as any });
   return NextResponse.json({ message }, { status: 201 });
 }

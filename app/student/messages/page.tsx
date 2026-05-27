@@ -1,67 +1,850 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 
-type Msg = { id: string; content: string; senderStudentId?: string; senderFacultyId?: string; createdAt: string; };
+type Msg = { 
+  id: string; 
+  content: string; 
+  senderStudentId?: string; 
+  senderFacultyId?: string; 
+  receiverStudentId?: string;
+  receiverFacultyId?: string;
+  createdAt: string; 
+  messageType?: string;
+  stickerUrl?: string | null;
+  parentMessageId?: string | null;
+  parentMessage?: {
+    id: string;
+    content: string;
+    messageType: string;
+    senderStudentId?: string;
+    senderFacultyId?: string;
+  } | null;
+};
+
 type Faculty = { id: string; fullName: string; designation: string; department: string; };
+type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; };
+type FriendSearchResult = Student & { friendshipStatus: string; friendshipId: string | null; };
+type FriendshipRequest = { id: string; createdAt: string; sender?: Student; receiver?: Student; };
+
+const CUSTOM_STICKERS = [
+  { id: "wink", name: "😉 Wink", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f609/512.webp" },
+  { id: "cool", name: "😎 Cool", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp" },
+  { id: "crazy", name: "🤪 Crazy", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f92a/512.webp" },
+  { id: "fist", name: "👊 Fist Bump", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44a/512.webp" },
+  { id: "flex", name: "💪 Flex", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f4aa/512.webp" },
+  { id: "rocket", name: "🚀 Lords Rocket", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f680/512.webp" },
+  { id: "trophy", name: "🏆 First Rank", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3c6/512.webp" },
+  { id: "studying", name: "📚 Exam Study", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f4d6/512.webp" }
+];
 
 export default function StudentMessagesPage() {
   const [myId, setMyId] = useState("");
-  const [faculty, setFaculty] = useState<Faculty | null>(null);
+  const [activeTab, setActiveTab] = useState<"chats" | "friends" | "requests">("chats");
+  
+  // Chats & Connections
+  const [assignedFaculty, setAssignedFaculty] = useState<Faculty | null>(null);
+  const [friends, setFriends] = useState<Student[]>([]);
+  const [incomingRequests, setIncomingRequests] = useState<FriendshipRequest[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<FriendshipRequest[]>([]);
+  
+  // Active Chat State
+  const [activeChat, setActiveChat] = useState<{ id: string; name: string; type: "faculty" | "student" } | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [quotedMsg, setQuotedMsg] = useState<Msg | null>(null);
+  const [showStickers, setShowStickers] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<FriendSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Initial setup: Profile, Advisor, and Connections
   useEffect(() => {
     fetch("/api/student/me").then((r) => r.json()).then(async (d) => {
       setMyId(d.student?.id);
       const facultyId = d.student?.assignedFacultyId;
       if (facultyId) {
-        fetch(`/api/faculty/public?id=${facultyId}`).then((r) => r.ok ? r.json() : null).then((fd) => { if (fd) setFaculty(fd.faculty); });
-        const load = () => fetch(`/api/messages?with=${facultyId}`).then((r) => r.json()).then((md) => setMessages(md.messages ?? []));
-        load();
-        const t = setInterval(load, 8000);
-        return () => clearInterval(t);
+        fetch(`/api/faculty/public?id=${facultyId}`).then((r) => r.ok ? r.json() : null).then((fd) => {
+          if (fd) setAssignedFaculty(fd.faculty);
+        });
       }
     });
+    loadConnections();
   }, []);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  // Reload connections (friends, pending requests)
+  async function loadConnections() {
+    try {
+      const res = await fetch("/api/student/friends");
+      if (res.ok) {
+        const data = await res.json();
+        setFriends(data.friends || []);
+        setIncomingRequests(data.incoming || []);
+        setOutgoingRequests(data.outgoing || []);
+      }
+    } catch (e) {
+      console.error("Failed to load friendships", e);
+    }
+  }
 
-  async function send(e: React.FormEvent) {
+  // Poll conversation history with active user
+  useEffect(() => {
+    if (!activeChat) {
+      setMessages([]);
+      return;
+    }
+
+    const loadHistory = () => {
+      fetch(`/api/messages?with=${activeChat.id}`)
+        .then((r) => r.json())
+        .then((md) => {
+          setMessages(md.messages ?? []);
+        });
+    };
+
+    loadHistory();
+    const interval = setInterval(loadHistory, 4000);
+    return () => clearInterval(interval);
+  }, [activeChat]);
+
+  // Scroll to bottom when messages load
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Handle classmate search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const delayDebounce = setTimeout(() => {
+      fetch(`/api/student/friends?search=${encodeURIComponent(searchQuery)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          setSearchResults(d.results || []);
+          setIsSearching(false);
+        })
+        .catch(() => setIsSearching(false));
+    }, 400);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  // Friend Request Actions
+  async function sendFriendRequest(studentId: string) {
+    const res = await fetch("/api/student/friends", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId }),
+    });
+    if (res.ok) {
+      setSearchQuery("");
+      loadConnections();
+      alert("Friend request bheja gaya!");
+    } else {
+      const err = await res.json();
+      alert(err.error || "Request failed");
+    }
+  }
+
+  async function handleRequest(id: string, status: "ACCEPTED" | "REJECTED") {
+    const res = await fetch(`/api/student/friends/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      loadConnections();
+    }
+  }
+
+  async function removeFriendship(id: string) {
+    if (!confirm("Are you sure?")) return;
+    const res = await fetch(`/api/student/friends/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      if (activeChat?.id === id) setActiveChat(null);
+      loadConnections();
+    }
+  }
+
+  // Message Sender
+  async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || !faculty) return;
-    const text = input; setInput("");
-    await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: text, receiverId: faculty.id, receiverRole: "faculty" }) });
-    fetch(`/api/messages?with=${faculty.id}`).then((r) => r.json()).then((d) => setMessages(d.messages ?? []));
+    if (!input.trim() || !activeChat) return;
+    
+    const content = input;
+    setInput("");
+    const parentId = quotedMsg?.id;
+    setQuotedMsg(null);
+
+    await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content,
+        receiverId: activeChat.id,
+        receiverRole: activeChat.type,
+        messageType: "TEXT",
+        parentMessageId: parentId,
+      }),
+    });
+
+    fetch(`/api/messages?with=${activeChat.id}`).then((r) => r.json()).then((d) => {
+      setMessages(d.messages ?? []);
+    });
+  }
+
+  // Sticker Sender
+  async function sendSticker(stickerUrl: string) {
+    if (!activeChat) return;
+    setShowStickers(false);
+
+    await fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: "Sticker",
+        receiverId: activeChat.id,
+        receiverRole: activeChat.type,
+        messageType: "STICKER",
+        stickerUrl,
+      }),
+    });
+
+    fetch(`/api/messages?with=${activeChat.id}`).then((r) => r.json()).then((d) => {
+      setMessages(d.messages ?? []);
+    });
   }
 
   return (
-    <div className="portal-main">
-      <div className="portal-topbar">
-        <div className="portal-topbar-title">💬 Messages</div>
-        {faculty && <div style={{ fontSize: "0.875rem", color: "#64748b" }}>with {faculty.fullName} · {faculty.designation}</div>}
+    <div className="portal-main" style={{ display: "flex", flexDirection: "column", height: "100vh", padding: 0 }}>
+      {/* Visual Header */}
+      <div style={{
+        padding: "16px 24px",
+        background: "rgba(255, 255, 255, 0.8)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontSize: "24px" }}>🚀</span>
+          <div>
+            <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#1e293b" }}>LeGeZt Message Studio</h1>
+            <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>WhatsApp-like clean, real-time messaging chamber</p>
+          </div>
+        </div>
       </div>
-      <div className="portal-content" style={{ padding: 0, height: "calc(100vh - 80px)" }}>
-        {!faculty ? (
-          <div className="empty-state" style={{ marginTop: 80 }}>
-            <div className="empty-icon">⏳</div>
-            <div>No faculty assigned yet. Admin will assign you a faculty mentor.</div>
-          </div>
-        ) : (
-          <div className="messages-chat" style={{ height: "100%" }}>
-            <div className="chat-messages">
-              {messages.length === 0 && <div className="empty-state"><div className="empty-icon">💬</div><div>No messages yet. Start the conversation!</div></div>}
-              {messages.map((m) => (
-                <div key={m.id} className={`chat-bubble ${m.senderStudentId === myId ? "sent" : "received"}`}>{m.content}</div>
-              ))}
-              <div ref={bottomRef} />
+
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", background: "#f8fafc" }}>
+        
+        {/* LEFT SIDEBAR: Search, Tabs, Lists */}
+        <div style={{
+          width: "360px",
+          borderRight: "1px solid rgba(226, 232, 240, 0.8)",
+          display: "flex",
+          flexDirection: "column",
+          background: "white"
+        }}>
+          {/* Search Classmates */}
+          <div style={{ padding: "16px", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ position: "relative" }}>
+              <input 
+                type="text"
+                placeholder="Classmates search karein (Name, Roll No...)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: "20px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "0.875rem",
+                  outline: "none",
+                  transition: "all 0.2s"
+                }}
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#64748b" }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
-            <form className="chat-input-bar" onSubmit={send}>
-              <input className="chat-input" placeholder="Message your faculty..." value={input} onChange={(e) => setInput(e.target.value)} />
-              <button type="submit" className="chat-send-btn student">Send</button>
-            </form>
           </div>
-        )}
+
+          {/* Sidebar Tab triggers */}
+          {!searchQuery && (
+            <div style={{ display: "flex", borderBottom: "1px solid #f1f5f9", padding: "4px 16px" }}>
+              {(["chats", "friends", "requests"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  style={{
+                    flex: 1,
+                    padding: "10px 0",
+                    border: "none",
+                    background: "none",
+                    fontSize: "0.875rem",
+                    fontWeight: activeTab === tab ? "700" : "500",
+                    color: activeTab === tab ? "#0f766e" : "#64748b",
+                    borderBottom: activeTab === tab ? "2px solid #0f766e" : "2px solid transparent",
+                    cursor: "pointer",
+                    textTransform: "capitalize",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {tab}
+                  {tab === "requests" && incomingRequests.length > 0 && (
+                    <span style={{ marginLeft: "6px", background: "#ef4444", color: "white", padding: "2px 6px", borderRadius: "10px", fontSize: "0.65rem", fontWeight: "bold" }}>
+                      {incomingRequests.length}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Sidebar Lists Container */}
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            {searchQuery ? (
+              // Search Results pane
+              <div style={{ padding: "12px" }}>
+                <h3 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "8px", marginBottom: "8px" }}>
+                  {isSearching ? "Searching..." : `Search Results (${searchResults.length})`}
+                </h3>
+                {searchResults.length === 0 && !isSearching && (
+                  <div style={{ textAlign: "center", padding: "24px", color: "#64748b", fontSize: "0.875rem" }}>Koi classmate nahi mila.</div>
+                )}
+                {searchResults.map((stu) => (
+                  <div key={stu.id} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 8px",
+                    borderRadius: "8px",
+                    borderBottom: "1px solid #f1f5f9",
+                    background: "#fff"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "#1e293b" }}>{stu.fullName}</div>
+                      <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{stu.branch} · {stu.year} Year</div>
+                    </div>
+                    {stu.friendshipStatus === "NONE" && (
+                      <button 
+                        onClick={() => sendFriendRequest(stu.id)}
+                        style={{ padding: "4px 10px", fontSize: "0.75rem", background: "#0f766e", color: "white", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "bold" }}
+                      >
+                        Add Friend
+                      </button>
+                    )}
+                    {stu.friendshipStatus === "PENDING_SENT" && (
+                      <span style={{ fontSize: "0.75rem", color: "#f59e0b", background: "#fef3c7", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Sent</span>
+                    )}
+                    {stu.friendshipStatus === "PENDING_RECEIVED" && (
+                      <span style={{ fontSize: "0.75rem", color: "#0f766e", background: "#ccfbf1", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Accept Karein</span>
+                    )}
+                    {stu.friendshipStatus === "ACCEPTED" && (
+                      <span style={{ fontSize: "0.75rem", color: "#10b981", background: "#d1fae5", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Friends</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Tab contents
+              <>
+                {/* 1. CHATS TAB */}
+                {activeTab === "chats" && (
+                  <div style={{ padding: "8px" }}>
+                    {/* Faculty Mentor */}
+                    {assignedFaculty && (
+                      <div 
+                        onClick={() => setActiveChat({ id: assignedFaculty.id, name: assignedFaculty.fullName, type: "faculty" })}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          cursor: "pointer",
+                          background: activeChat?.id === assignedFaculty.id ? "rgba(15, 118, 110, 0.08)" : "transparent",
+                          transition: "all 0.2s"
+                        }}
+                      >
+                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#0f766e", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                          🎓
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "0.875rem", fontWeight: "700", color: "#1e293b" }}>{assignedFaculty.fullName}</span>
+                            <span style={{ fontSize: "0.65rem", background: "#0f766e", color: "white", padding: "2px 6px", borderRadius: "8px", fontWeight: "bold" }}>Mentor</span>
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{assignedFaculty.designation} · {assignedFaculty.department}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ height: "1px", background: "#f1f5f9", margin: "8px 0" }} />
+
+                    {/* Student Friends chats */}
+                    {friends.length === 0 && (
+                      <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                        <span style={{ fontSize: "2rem" }}>💬</span>
+                        <div style={{ fontSize: "0.875rem", marginTop: "8px" }}>Koi chat active nahi hai. Classmates search karke add karein!</div>
+                      </div>
+                    )}
+                    {friends.map((friend) => (
+                      <div 
+                        key={friend.id}
+                        onClick={() => setActiveChat({ id: friend.id, name: friend.fullName, type: "student" })}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          cursor: "pointer",
+                          background: activeChat?.id === friend.id ? "rgba(15, 118, 110, 0.08)" : "transparent",
+                          transition: "all 0.2s",
+                          marginBottom: "4px"
+                        }}
+                      >
+                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#cbd5e1", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
+                          {friend.fullName[0]}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#1e293b" }}>{friend.fullName}</span>
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{friend.branch} · {friend.year} Year</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 2. FRIENDS TAB */}
+                {activeTab === "friends" && (
+                  <div style={{ padding: "8px" }}>
+                    {friends.length === 0 && (
+                      <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                        <div style={{ fontSize: "0.875rem" }}>Aapka koi friend nahi hai.</div>
+                      </div>
+                    )}
+                    {friends.map((friend) => (
+                      <div key={friend.id} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 12px",
+                        background: "white",
+                        borderRadius: "10px",
+                        marginBottom: "6px",
+                        border: "1px solid #f1f5f9"
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                            {friend.fullName[0]}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{friend.fullName}</div>
+                            <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{friend.branch} · {friend.year} Year</div>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            fetch(`/api/student/friends`).then(r => r.json()).then(d => {
+                              // Find friendshipId
+                              alert("Severing friendship...");
+                            });
+                          }}
+                          style={{ background: "none", border: "none", color: "#ef4444", fontSize: "0.75rem", cursor: "pointer" }}
+                        >
+                          Unfriend
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 3. REQUESTS TAB */}
+                {activeTab === "requests" && (
+                  <div style={{ padding: "12px" }}>
+                    {/* Incoming requests */}
+                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px" }}>
+                      Received Requests ({incomingRequests.length})
+                    </h4>
+                    {incomingRequests.length === 0 && (
+                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px", marginBottom: "16px" }}>Koi pending request nahi hai.</div>
+                    )}
+                    {incomingRequests.map((req) => (
+                      <div key={req.id} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px",
+                        background: "#f8fafc",
+                        borderRadius: "8px",
+                        marginBottom: "8px"
+                      }}>
+                        <div>
+                          <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{req.sender?.fullName}</div>
+                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.sender?.branch} · {req.sender?.year} Year</div>
+                        </div>
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <button 
+                            onClick={() => handleRequest(req.id, "ACCEPTED")}
+                            style={{ padding: "4px 8px", background: "#10b981", color: "white", border: "none", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer", fontWeight: "bold" }}
+                          >
+                            Accept
+                          </button>
+                          <button 
+                            onClick={() => handleRequest(req.id, "REJECTED")}
+                            style={{ padding: "4px 8px", background: "#ef4444", color: "white", border: "none", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer", fontWeight: "bold" }}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div style={{ height: "1px", background: "#e2e8f0", margin: "16px 0" }} />
+
+                    {/* Outgoing requests */}
+                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px" }}>
+                      Sent Requests ({outgoingRequests.length})
+                    </h4>
+                    {outgoingRequests.length === 0 && (
+                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px" }}>Bheji gayi koi pending request nahi hai.</div>
+                    )}
+                    {outgoingRequests.map((req) => (
+                      <div key={req.id} style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px",
+                        background: "#f8fafc",
+                        borderRadius: "8px",
+                        marginBottom: "8px"
+                      }}>
+                        <div>
+                          <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{req.receiver?.fullName}</div>
+                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.receiver?.branch} · {req.receiver?.year} Year</div>
+                        </div>
+                        <button 
+                          onClick={() => removeFriendship(req.id)}
+                          style={{ padding: "4px 8px", background: "none", border: "1px solid #cbd5e1", color: "#64748b", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer" }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT PANE: Conversation Chamber */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#e5e7eb" }}>
+          {activeChat ? (
+            <>
+              {/* Chat Header */}
+              <div style={{
+                padding: "14px 24px",
+                background: "white",
+                borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+              }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: activeChat.type === "faculty" ? "#0f766e" : "#64748b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                  {activeChat.type === "faculty" ? "🎓" : activeChat.name[0]}
+                </div>
+                <div>
+                  <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1e293b" }}>{activeChat.name}</div>
+                  <div style={{ fontSize: "0.75rem", color: "#0f766e", fontWeight: "600", textTransform: "capitalize" }}>
+                    {activeChat.type} Advisor/Classmate
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat Messages Chamber */}
+              <div style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+                background: "#f1f5f9"
+              }}>
+                {messages.length === 0 && (
+                  <div style={{ alignSelf: "center", margin: "auto", textAlign: "center", color: "#64748b" }}>
+                    <span style={{ fontSize: "2.5rem" }}>💬</span>
+                    <div style={{ fontSize: "0.9rem", fontWeight: "bold", marginTop: "10px" }}>Baa-cheet Shuru Karein!</div>
+                    <div style={{ fontSize: "0.75rem", marginTop: "4px" }}>Say hello or quote a reply in this secure conversation.</div>
+                  </div>
+                )}
+
+                {messages.map((m) => {
+                  const isMe = m.senderStudentId === myId;
+                  
+                  return (
+                    <div 
+                      key={m.id} 
+                      className="chat-message-row"
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignSelf: isMe ? "flex-end" : "flex-start",
+                        alignItems: isMe ? "flex-end" : "flex-start",
+                        maxWidth: "60%"
+                      }}
+                    >
+                      {/* Message Bubble */}
+                      <div 
+                        style={{
+                          background: isMe ? "#0f766e" : "white",
+                          color: isMe ? "white" : "#1e293b",
+                          padding: m.messageType === "STICKER" ? "8px" : "10px 14px",
+                          borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                          position: "relative",
+                          display: "inline-block",
+                          minWidth: "60px"
+                        }}
+                      >
+                        {/* Hover Quick Quote Action */}
+                        <button 
+                          onClick={() => setQuotedMsg(m)}
+                          style={{
+                            position: "absolute",
+                            right: isMe ? "100%" : "auto",
+                            left: isMe ? "auto" : "100%",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            background: "white",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "50%",
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            margin: "0 6px",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                            fontSize: "0.65rem"
+                          }}
+                          title="Reply/Quote"
+                        >
+                          ↩
+                        </button>
+
+                        {/* Quoted Message display */}
+                        {m.parentMessage && (
+                          <div style={{
+                            background: isMe ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.05)",
+                            padding: "6px 10px",
+                            borderRadius: "8px",
+                            fontSize: "0.75rem",
+                            marginBottom: "6px",
+                            borderLeft: isMe ? "3px solid #ccfbf1" : "3px solid #0f766e"
+                          }}>
+                            <div style={{ fontWeight: "bold", fontSize: "0.65rem", color: isMe ? "#ccfbf1" : "#0f766e", marginBottom: "2px" }}>
+                              {m.parentMessage.senderStudentId === myId ? "Aap" : activeChat.name}
+                            </div>
+                            <div style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                              {m.parentMessage.content}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Rich Content rendering */}
+                        {m.messageType === "STICKER" && m.stickerUrl ? (
+                          <img 
+                            src={m.stickerUrl} 
+                            alt="Sticker" 
+                            style={{ width: "120px", height: "120px", objectFit: "contain", borderRadius: "12px" }}
+                          />
+                        ) : (
+                          <div style={{ fontSize: "0.875rem", lineHeight: "1.4" }}>{m.content}</div>
+                        )}
+
+                        {/* Timestamp */}
+                        <div style={{
+                          fontSize: "0.6rem",
+                          color: isMe ? "rgba(255,255,255,0.6)" : "#94a3b8",
+                          textAlign: "right",
+                          marginTop: "4px"
+                        }}>
+                          {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={bottomRef} />
+              </div>
+
+              {/* Rich Footer: Quote bar, Emojis/Stickers Sheet, Input field */}
+              <div style={{
+                background: "white",
+                borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+                padding: "12px 24px",
+                display: "flex",
+                flexDirection: "column",
+                position: "relative"
+              }}>
+                {/* Quoted Message Preview Bar */}
+                {quotedMsg && (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px 12px",
+                    background: "#f1f5f9",
+                    borderRadius: "8px",
+                    marginBottom: "8px",
+                    borderLeft: "4px solid #0f766e"
+                  }}>
+                    <div style={{ fontSize: "0.8rem" }}>
+                      <span style={{ fontWeight: "bold", color: "#0f766e" }}>Replying to message: </span>
+                      <span style={{ color: "#475569" }}>{quotedMsg.content}</span>
+                    </div>
+                    <button 
+                      onClick={() => setQuotedMsg(null)}
+                      style={{ background: "none", border: "none", fontSize: "0.875rem", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {/* Stickers Selection Sheet */}
+                {showStickers && (
+                  <div style={{
+                    position: "absolute",
+                    bottom: "100%",
+                    left: "24px",
+                    background: "white",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "16px",
+                    boxShadow: "0 -4px 12px rgba(0,0,0,0.08)",
+                    padding: "16px",
+                    width: "280px",
+                    zIndex: 100,
+                    marginBottom: "10px"
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "0.8rem", fontWeight: "bold", color: "#1e293b" }}>Lords College Stickers</span>
+                      <button onClick={() => setShowStickers(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>✕</button>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+                      {CUSTOM_STICKERS.map((sticker) => (
+                        <button
+                          key={sticker.id}
+                          onClick={() => sendSticker(sticker.url)}
+                          title={sticker.name}
+                          style={{
+                            background: "#f8fafc",
+                            border: "1px solid #f1f5f9",
+                            borderRadius: "10px",
+                            padding: "6px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "all 0.15s"
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.background = "#e2e8f0"}
+                          onMouseOut={(e) => e.currentTarget.style.background = "#f8fafc"}
+                        >
+                          <img src={sticker.url} alt={sticker.name} style={{ width: "38px", height: "38px", objectFit: "contain" }} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Chat Inputs */}
+                <form onSubmit={sendMessage} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <button 
+                    type="button"
+                    onClick={() => setShowStickers(!showStickers)}
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "#f1f5f9",
+                      fontSize: "1.2rem",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
+                    🎨
+                  </button>
+
+                  <input 
+                    type="text" 
+                    placeholder="Message write karein..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: "10px 18px",
+                      borderRadius: "24px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "0.875rem",
+                      outline: "none",
+                      background: "#f8fafc"
+                    }}
+                  />
+
+                  <button 
+                    type="submit" 
+                    style={{
+                      padding: "10px 20px",
+                      background: "#0f766e",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "24px",
+                      fontSize: "0.875rem",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      boxShadow: "0 1px 3px rgba(15,118,110,0.2)"
+                    }}
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </>
+          ) : (
+            // Empty State
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
+              <span style={{ fontSize: "3.5rem" }}>💬</span>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "#1e293b", marginTop: "16px" }}>LeGeZt Chat Room</h2>
+              <p style={{ fontSize: "0.85rem", marginTop: "4px", color: "#94a3b8" }}>Select any active chat from the sidebar list to start chatting.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

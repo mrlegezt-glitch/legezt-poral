@@ -96,6 +96,9 @@ model PortalMessage {
   isRead         Boolean  @default(false)
   attachmentUrl  String?
   attachmentName String?
+  messageType    String   @default("TEXT")
+  stickerUrl     String?
+  parentMessageId String? @db.ObjectId
 
   senderStudentId  String? @db.ObjectId
   senderFacultyId  String? @db.ObjectId
@@ -106,6 +109,9 @@ model PortalMessage {
 
   senderStudent   PortalStudent? @relation("StudentSentMessages", fields: [senderStudentId], references: [id])
   senderFaculty   PortalFaculty? @relation("FacultySentMessages", fields: [senderFacultyId], references: [id])
+  
+  parentMessage   PortalMessage? @relation("MessageReplies", fields: [parentMessageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies         PortalMessage[] @relation("MessageReplies")
 }
 
 // ─── DOCUMENTS ────────────────────────────────────────────────────────────────
@@ -327,5 +333,16 @@ model StudentAnswer {
   isCorrect    Boolean
 
   submission   ExamSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model PortalFriendship {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  requesterId String   @db.ObjectId
+  receiverId  String   @db.ObjectId
+  status      String   @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([requesterId, receiverId])
 }
 
