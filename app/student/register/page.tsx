@@ -46,7 +46,7 @@ export default function StudentRegisterPage() {
           <div style={{ marginTop: 40, background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", borderRadius: 12, padding: 20, textAlign: "left" }}>
             <div style={{ fontWeight: 600, marginBottom: 8, color: "#e2e8f0" }}>Registration Guidelines</div>
             <ul style={{ color: "#94a3b8", fontSize: "0.85rem", lineHeight: 1.6, paddingLeft: 16, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-              <li><strong>College Email:</strong> Register with your official email ending in <code>@lords.ac.in</code> to receive an instant verification link. Be sure to check your <strong>spam folder</strong>! (From info@mrlegezt.me)</li>
+              <li><strong>College Email:</strong> Register with your official email ending in <code>@lords.ac.in</code> to receive an instant verification link. Be sure to check your <strong>spam folder</strong>! (From mrlegezt@gmail.com)</li>
               <li><strong>Personal Email:</strong> If you use Gmail/Yahoo, you must enter your Roll Number. Your account will require manual approval by the Admin or Faculty.</li>
             </ul>
           </div>

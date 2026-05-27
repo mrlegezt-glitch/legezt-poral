@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 const host = process.env.SMTP_HOST || "mail.privateemail.com";
 const port = parseInt(process.env.SMTP_PORT || "465");
 const secure = process.env.SMTP_SECURE === "true" || port === 465;
-const user = process.env.SMTP_USER || "info@mrlegezt.me";
+const user = process.env.SMTP_USER || "mrlegezt@gmail.com";
 const pass = process.env.SMTP_PASS;
 
 const transporter = nodemailer.createTransport({
@@ -31,7 +31,7 @@ export async function sendVerificationEmail(email: string, token: string, fullNa
       <p style="word-break: break-all; color: #64748b;"><a href="${verifyUrl}">${verifyUrl}</a></p>
       <p style="margin-top: 30px; font-size: 0.875rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
         If you did not register for an account, you can safely ignore this email.<br>
-        Sent from <strong>info@mrlegezt.me</strong>
+        Sent from <strong>mrlegezt@gmail.com</strong>
       </p>
     </div>
   `;
@@ -57,7 +57,7 @@ export async function sendOtpEmail(email: string, otp: string, fullName: string)
       <p style="color: #ef4444; font-weight: bold; text-align: center;">This code is valid for 10 minutes only.</p>
       <p style="margin-top: 30px; font-size: 0.875rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
         If you did not request this code, you can safely ignore this email and your password will remain unchanged.<br>
-        Sent from <strong>info@mrlegezt.me</strong>
+        Sent from <strong>mrlegezt@gmail.com</strong>
       </p>
     </div>
   `;
@@ -133,7 +133,7 @@ export async function sendExamResultEmail(
       </div>
 
       <p style="margin-top: 30px; font-size: 0.875rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-        Sent automatically from <strong>info@mrlegezt.me</strong>. System proctoring was active during the test.
+        Sent automatically from <strong>mrlegezt@gmail.com</strong>. System proctoring was active during the test.
       </p>
     </div>
   `;
@@ -175,7 +175,7 @@ export async function sendExamActiveEmail(
       </div>
 
       <p style="margin-top: 30px; font-size: 0.875rem; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-        Sent automatically from <strong>info@mrlegezt.me</strong>.
+        Sent automatically from <strong>mrlegezt@gmail.com</strong>.
       </p>
     </div>
   `;
