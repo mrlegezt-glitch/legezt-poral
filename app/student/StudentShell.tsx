@@ -59,7 +59,34 @@ export default function StudentShell({ children }: { children: React.ReactNode }
               <div className="sidebar-role">Year {student.year} · {student.branch}</div>
             </div>
           </div>
-          <button onClick={logout} className="btn-outline" style={{ marginTop: 12, width: "100%", padding: "8px", borderRadius: 6, fontSize: "0.8rem", cursor: "pointer" }}>
+
+          {/* Install Mobile App Button */}
+          <a
+            href="https://drive.google.com/uc?export=download&id=1mAtzZHAN-5uGVAhGjVR9ThKzNdplOGiF"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "14px",
+              padding: "9px 14px",
+              borderRadius: "8px",
+              background: "linear-gradient(135deg, rgba(14,165,233,0.15), rgba(37,99,235,0.18))",
+              border: "1px solid rgba(14,165,233,0.3)",
+              color: "#0ea5e9",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+              boxShadow: "0 0 12px rgba(14,165,233,0.08)",
+            }}
+          >
+            <span style={{ fontSize: "16px" }}>📱</span>
+            <span>Install Student App</span>
+          </a>
+
+          <button onClick={logout} className="btn-outline" style={{ marginTop: 10, width: "100%", padding: "8px", borderRadius: 6, fontSize: "0.8rem", cursor: "pointer" }}>
             Sign Out
           </button>
         </div>
