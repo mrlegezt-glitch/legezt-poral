@@ -62,7 +62,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
           {/* Install Mobile App Button */}
           <a
-            href="https://drive.google.com/uc?export=download&id=1mAtzZHAN-5uGVAhGjVR9ThKzNdplOGiF"
+            href="https://drive.google.com/uc?export=download&id=16AIqV0cCbOjIHUMn6lpVRV2nK_V_g3HO"
             target="_blank"
             rel="noopener noreferrer"
             style={{

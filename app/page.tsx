@@ -9,8 +9,8 @@ const COLLEGES = [
   { id: "vce", name: "Vasavi College of Engineering", shortName: "VCE", icon: "📚", color: "139, 92, 246" } // Violet
 ] as const;
 
-const APK_DRIVE_LINK = "https://drive.google.com/file/d/1mAtzZHAN-5uGVAhGjVR9ThKzNdplOGiF/view?usp=sharing";
-const APK_DIRECT_DOWNLOAD = "https://drive.google.com/uc?export=download&id=1mAtzZHAN-5uGVAhGjVR9ThKzNdplOGiF";
+const APK_DRIVE_LINK = "https://drive.google.com/file/d/16AIqV0cCbOjIHUMn6lpVRV2nK_V_g3HO/view?usp=sharing";
+const APK_DIRECT_DOWNLOAD = "https://drive.google.com/uc?export=download&id=16AIqV0cCbOjIHUMn6lpVRV2nK_V_g3HO";
 
 export default function PortalLandingPage() {
   const [selectedCollege, setSelectedCollege] = useState<{ id: string; name: string; shortName: string; icon: string; color: string } | null>(null);
