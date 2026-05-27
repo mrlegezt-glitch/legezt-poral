@@ -224,7 +224,7 @@ export default function StudentMessagesPage() {
   }
 
   return (
-    <div className="portal-main" style={{ display: "flex", flexDirection: "column", height: "100vh", padding: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", overflow: "hidden", padding: 0 }}>
       {/* Visual Header */}
       <div style={{
         padding: "16px 24px",

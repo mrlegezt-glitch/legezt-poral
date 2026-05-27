@@ -6,7 +6,7 @@ import { z } from "zod";
 const sendSchema = z.object({
   content: z.string().min(1).max(2000),
   receiverId: z.string(),
-  receiverRole: z.enum(["student", "faculty"]),
+  receiverRole: z.enum(["student", "faculty", "STUDENT", "FACULTY"]),
   messageType: z.enum(["TEXT", "STICKER", "EMOJI"]).optional(),
   parentMessageId: z.string().optional(),
   stickerUrl: z.string().optional(),
@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
   const { content, receiverId, receiverRole, messageType, parentMessageId, stickerUrl } = parsed.data;
+  const normalizedRole = receiverRole.toLowerCase();
 
   const data: Record<string, any> = { 
     content,
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
   };
   if (session.role === "student") data.senderStudentId = session.userId;
   else data.senderFacultyId = session.userId;
-  if (receiverRole === "student") data.receiverStudentId = receiverId;
+  if (normalizedRole === "student") data.receiverStudentId = receiverId;
   else data.receiverFacultyId = receiverId;
 
   const message = await prisma.portalMessage.create({ data: data as any });

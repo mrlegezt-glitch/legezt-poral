@@ -18,6 +18,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
   const [student, setStudent] = useState<Student | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const isMessagesPage = pathname === "/student/messages";
   const router = useRouter();
 
   useEffect(() => {
@@ -102,7 +103,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
           </button>
           <div style={{ fontFamily: "var(--font-display)", fontWeight: "bold", letterSpacing: "1px" }}>LIET PORTAL</div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, overflowY: isMessagesPage ? "hidden" : "auto", display: "flex", flexDirection: "column" }}>
           {children}
         </div>
       </main>
