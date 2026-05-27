@@ -5,14 +5,15 @@ import prisma from "@/lib/prisma";
 // PUT: Accept or Reject a friend request
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getPortalSession();
   if (!session || session.role !== "student") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const friendshipId = params.id;
+  const friendshipId = id;
   const myId = session.userId;
 
   try {
@@ -52,14 +53,15 @@ export async function PUT(
 // DELETE: Unfriend OR Cancel friend request
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getPortalSession();
   if (!session || session.role !== "student") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const friendshipId = params.id;
+  const friendshipId = id;
   const myId = session.userId;
 
   try {
