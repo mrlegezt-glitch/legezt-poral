@@ -102,6 +102,58 @@ export default function StudentShell({ children }: { children: React.ReactNode }
     router.push("/student/login");
   }
 
+  const getPageTitle = () => {
+    switch (pathname) {
+      case "/student/dashboard":
+        return "Dashboard";
+      case "/student/ai-studio":
+        return "AI Studio";
+      case "/student/messages":
+        return "Messages";
+      case "/student/documents":
+        return "Documents";
+      case "/student/exams":
+        return "Surprise Exams";
+      case "/student/results":
+        return "Results";
+      case "/student/profile":
+        return "My Profile";
+      default:
+        return "LIET Portal";
+    }
+  };
+
+  const getBackHref = () => {
+    if (pathname === "/student/dashboard") {
+      return "/";
+    }
+    return "/student/dashboard";
+  };
+
+  const handleNewChat = () => {
+    if (pathname === "/student/ai-studio") {
+      window.dispatchEvent(new CustomEvent("clear-ai-chat"));
+    } else {
+      router.push("/student/ai-studio");
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("clear-ai-chat"));
+      }, 150);
+    }
+  };
+
+  const handleSyncHistory = async () => {
+    try {
+      const res = await fetch("/api/ai/history");
+      if (res.ok) {
+        const data = await res.json();
+        window.dispatchEvent(new CustomEvent("sync-ai-history", { detail: data.messages }));
+        alert(`Sync Complete! Verified ${data.messages?.length || 0} messages in cloud history.`);
+      }
+    } catch {
+      alert("Failed to sync chat history. Please check connection.");
+    }
+  };
+
   if (!student) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}><div className="spinner" /></div>;
 
   return (
@@ -123,7 +175,19 @@ export default function StudentShell({ children }: { children: React.ReactNode }
         <div className="sidebar-user">
           <div className="sidebar-user-info">
             <div className="sidebar-avatar">
-              {student.fullName.charAt(0)}
+              {student.fullName.charAt(0).toUpperCase()}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "#22c55e",
+                  border: "2px solid var(--bg-panel)",
+                }}
+              />
             </div>
             <div>
               <div className="sidebar-username">{student.fullName}</div>
@@ -153,7 +217,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
               boxShadow: "0 0 12px rgba(14,165,233,0.08)",
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" stroke-linecap="round" stroke-linejoin="round" style={{ flexShrink: 0 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
               <line x1="12" y1="18" x2="12.01" y2="18"/>
             </svg>
@@ -166,18 +230,90 @@ export default function StudentShell({ children }: { children: React.ReactNode }
         </div>
       </aside>
       <main className="portal-main">
-        {pathname !== "/student/ai-studio" && (
-          <div className="portal-mobile-toggle-header" style={{ alignItems: "center", padding: "16px 20px", background: "var(--bg-panel)", borderBottom: "1px solid var(--border-muted)" }}>
-            <button onClick={() => setMobileOpen(true)} className="portal-mobile-toggle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {/* Unified Glassmorphic Responsive Topbar */}
+        <header className="portal-topbar-unified">
+          <div className="topbar-left">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="topbar-mobile-menu-btn"
+              title="Toggle Navigation Menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <line x1="3" y1="18" x2="21" y2="18"></line>
               </svg>
             </button>
-            <div style={{ fontFamily: "var(--font-display)", fontWeight: "bold", letterSpacing: "1px" }}>LIET PORTAL</div>
+
+            <Link
+              href={getBackHref()}
+              className="topbar-back-btn"
+              title={pathname === "/student/dashboard" ? "Exit Student Portal" : "Back to Dashboard"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </Link>
+
+            <div className="topbar-brand">
+              <div className="topbar-logo-glow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/>
+                </svg>
+              </div>
+              <div className="topbar-title-wrap">
+                <h1 className="topbar-title">{getPageTitle()}</h1>
+                <p className="topbar-subtitle">LIET Portal</p>
+              </div>
+            </div>
           </div>
-        )}
+
+          <div className="topbar-right">
+            <button
+              onClick={handleNewChat}
+              className="topbar-btn-newchat"
+              title="Start a new AI chat session"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>New Chat</span>
+            </button>
+
+            <button
+              onClick={handleSyncHistory}
+              className="topbar-btn-history"
+              title="Verify persistent cloud history"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>History</span>
+            </button>
+
+            <div className="topbar-badge-pro">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              Pro
+            </div>
+
+            <div className="topbar-student-info">
+              <span className="topbar-student-name">
+                {student.fullName.split(" ")[0]}
+              </span>
+              <div className="topbar-avatar-container">
+                <div className="topbar-avatar">
+                  {student.fullName.charAt(0).toUpperCase()}
+                </div>
+                <div className="topbar-status-dot" />
+              </div>
+            </div>
+          </div>
+        </header>
         <div style={{ flex: 1, overflowY: isMessagesPage ? "hidden" : "auto", display: "flex", flexDirection: "column" }}>
           {children}
         </div>

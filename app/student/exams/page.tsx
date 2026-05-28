@@ -363,7 +363,7 @@ export default function StudentExamsPage() {
   if (activeExam) {
     const q = questions[currentIdx];
     return (
-      <div className="portal-main" style={{ position: "relative", minHeight: "90vh", background: "#f8fafc" }}>
+      <div className="portal-main" style={{ position: "relative", minHeight: "90vh", background: "var(--bg-deep)" }}>
         {/* Top bar */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", background: "var(--bg-panel)", borderBottom: "1px solid var(--border-muted)" }}>
           <div>

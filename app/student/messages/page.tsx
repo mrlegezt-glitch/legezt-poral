@@ -233,7 +233,7 @@ export default function StudentMessagesPage() {
           overflow: hidden;
           padding: 0;
           font-family: 'Inter', sans-serif;
-          background: #f8fafc;
+          background: var(--bg-deep);
         }
         @media (min-width: 769px) {
           .messages-page-container {
@@ -250,36 +250,36 @@ export default function StudentMessagesPage() {
       {/* Visual Header */}
       <div style={{
         padding: "16px 24px",
-        background: "rgba(255, 255, 255, 0.8)",
+        background: "var(--bg-panel)",
         backdropFilter: "blur(12px)",
-        borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+        borderBottom: "1px solid var(--border-muted)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ color: "#0f766e", display: "flex", alignItems: "center" }}>
+          <span style={{ color: "#6366f1", display: "flex", alignItems: "center" }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5s3-1 5.5-2.5C9.37 20.8 11.61 21 14 21c7.18 0 10-7.18 10-10 0-2.42-.2-4.63-.5-6.5H21a12 12 0 0 0-12 12c0 2.39.2 4.63.5 6.5-2.5 1.5-5.5.5-5.5.5Z"/><path d="M12 12a3 3 0 1 0-6 0c0 .83.34 1.58.88 2.12L12 12Z"/></svg>
           </span>
           <div>
-            <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#1e293b" }}>LeGeZt Message Studio</h1>
-            <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>Secure real-time academic messenger channel</p>
+            <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary)" }}>LeGeZt Message Studio</h1>
+            <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--text-secondary)" }}>Secure real-time academic messenger channel</p>
           </div>
         </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", background: "#f8fafc" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", background: "var(--bg-deep)" }}>
         
         {/* LEFT SIDEBAR: Search, Tabs, Lists */}
         <div style={{
           width: "360px",
-          borderRight: "1px solid rgba(226, 232, 240, 0.8)",
+          borderRight: "1px solid var(--border-muted)",
           display: "flex",
           flexDirection: "column",
-          background: "white"
+          background: "var(--bg-panel)"
         }}>
           {/* Search Classmates */}
-          <div style={{ padding: "16px", borderBottom: "1px solid #f1f5f9" }}>
+          <div style={{ padding: "16px", borderBottom: "1px solid var(--border-muted)" }}>
             <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
               <input 
                 type="text"
@@ -290,29 +290,31 @@ export default function StudentMessagesPage() {
                   width: "100%",
                   padding: "10px 14px 10px 36px",
                   borderRadius: "20px",
-                  border: "1px solid #cbd5e1",
+                  border: "1px solid var(--border-muted)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  color: "var(--text-primary)",
                   fontSize: "0.875rem",
                   outline: "none",
                   transition: "all 0.2s"
                 }}
               />
-              <span style={{ position: "absolute", left: "14px", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+              <span style={{ position: "absolute", left: "14px", color: "var(--text-secondary)", display: "flex", alignItems: "center" }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               </span>
               {searchQuery && (
                 <button 
                   onClick={() => setSearchQuery("")}
-                  style={{ position: "absolute", right: "12px", border: "none", background: "none", cursor: "pointer", color: "#64748b", display: "flex", alignItems: "center" }}
+                  style={{ position: "absolute", right: "12px", border: "none", background: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", alignItems: "center" }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
               )}
             </div>
           </div>
-
+ 
           {/* Sidebar Tab triggers */}
           {!searchQuery && (
-            <div style={{ display: "flex", borderBottom: "1px solid #f1f5f9", padding: "4px 16px" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid var(--border-muted)", padding: "4px 16px" }}>
               {(["chats", "friends", "requests"] as const).map((tab) => (
                 <button
                   key={tab}
@@ -324,8 +326,8 @@ export default function StudentMessagesPage() {
                     background: "none",
                     fontSize: "0.875rem",
                     fontWeight: activeTab === tab ? "700" : "500",
-                    color: activeTab === tab ? "#0f766e" : "#64748b",
-                    borderBottom: activeTab === tab ? "2px solid #0f766e" : "2px solid transparent",
+                    color: activeTab === tab ? "#a5b4fc" : "var(--text-secondary)",
+                    borderBottom: activeTab === tab ? "2px solid #6366f1" : "2px solid transparent",
                     cursor: "pointer",
                     textTransform: "capitalize",
                     transition: "all 0.2s"
@@ -404,7 +406,7 @@ export default function StudentMessagesPage() {
                           padding: "12px",
                           borderRadius: "12px",
                           cursor: "pointer",
-                          background: activeChat?.id === assignedFaculty.id ? "rgba(15, 118, 110, 0.08)" : "transparent",
+                          background: activeChat?.id === assignedFaculty.id ? "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.06))" : "transparent",
                           transition: "all 0.2s"
                         }}
                       >
@@ -413,20 +415,20 @@ export default function StudentMessagesPage() {
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.875rem", fontWeight: "700", color: "#1e293b" }}>{assignedFaculty.fullName}</span>
+                            <span style={{ fontSize: "0.875rem", fontWeight: "700", color: "var(--text-primary)" }}>{assignedFaculty.fullName}</span>
                             <span style={{ fontSize: "0.65rem", background: "#0f766e", color: "white", padding: "2px 6px", borderRadius: "8px", fontWeight: "bold" }}>Advisor</span>
                           </div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{assignedFaculty.designation} · {assignedFaculty.department}</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>{assignedFaculty.designation} · {assignedFaculty.department}</div>
                         </div>
                       </div>
                     )}
-
-                    <div style={{ height: "1px", background: "#f1f5f9", margin: "8px 0" }} />
-
+ 
+                    <div style={{ height: "1px", background: "var(--border-muted)", margin: "8px 0" }} />
+ 
                     {/* Student Friends chats */}
                     {friends.length === 0 && (
-                      <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
-                        <div style={{ display: "flex", justifyContent: "center", color: "#cbd5e1" }}>
+                      <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
+                        <div style={{ display: "flex", justifyContent: "center", color: "var(--border-muted)" }}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </div>
                         <div style={{ fontSize: "0.875rem", marginTop: "8px" }}>No active chats. Search and add classmates to start a conversation.</div>
@@ -443,19 +445,19 @@ export default function StudentMessagesPage() {
                           padding: "12px",
                           borderRadius: "12px",
                           cursor: "pointer",
-                          background: activeChat?.id === friend.id ? "rgba(15, 118, 110, 0.08)" : "transparent",
+                          background: activeChat?.id === friend.id ? "linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.06))" : "transparent",
                           transition: "all 0.2s",
                           marginBottom: "4px"
                         }}
                       >
-                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#e2e8f0", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
-                          {friend.fullName[0]}
+                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
+                          {friend.fullName[0].toUpperCase()}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#1e293b" }}>{friend.fullName}</span>
+                            <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--text-primary)" }}>{friend.fullName}</span>
                           </div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{friend.branch} · Year {friend.year}</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>{friend.branch} · Year {friend.year}</div>
                         </div>
                       </div>
                     ))}
@@ -585,34 +587,33 @@ export default function StudentMessagesPage() {
             )}
           </div>
         </div>
-
         {/* RIGHT PANE: Conversation Chamber */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#e5e7eb" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--bg-deep)" }}>
           {activeChat ? (
             <>
               {/* Chat Header */}
               <div style={{
                 padding: "14px 24px",
-                background: "white",
-                borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+                background: "var(--bg-panel)",
+                borderBottom: "1px solid var(--border-muted)",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
                 boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
               }}>
-                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: activeChat.type === "faculty" ? "#0f766e" : "#64748b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: activeChat.type === "faculty" ? "#0f766e" : "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
                   {activeChat.type === "faculty" ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-                  ) : activeChat.name[0]}
+                  ) : activeChat.name[0].toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1e293b" }}>{activeChat.name}</div>
-                  <div style={{ fontSize: "0.75rem", color: "#0f766e", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "var(--text-primary)" }}>{activeChat.name}</div>
+                  <div style={{ fontSize: "0.75rem", color: "#6366f1", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                     {activeChat.type} connection
                   </div>
                 </div>
               </div>
-
+ 
               {/* Chat Messages Chamber */}
               <div style={{
                 flex: 1,
@@ -621,18 +622,18 @@ export default function StudentMessagesPage() {
                 display: "flex",
                 flexDirection: "column",
                 gap: "12px",
-                background: "#f1f5f9"
+                background: "rgba(7, 9, 19, 0.45)"
               }}>
                 {messages.length === 0 && (
-                  <div style={{ alignSelf: "center", margin: "auto", textAlign: "center", color: "#64748b" }}>
-                    <div style={{ display: "flex", justifyContent: "center", color: "#cbd5e1", marginBottom: "8px" }}>
+                  <div style={{ alignSelf: "center", margin: "auto", textAlign: "center", color: "var(--text-secondary)" }}>
+                    <div style={{ display: "flex", justifyContent: "center", color: "var(--border-muted)", marginBottom: "8px" }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     </div>
                     <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>Start a conversation!</div>
                     <div style={{ fontSize: "0.75rem", marginTop: "4px" }}>Say hello or reply in this secure chat.</div>
                   </div>
                 )}
-
+ 
                 {messages.map((m) => {
                   const isMe = m.senderStudentId === myId;
                   
@@ -651,8 +652,9 @@ export default function StudentMessagesPage() {
                       {/* Message Bubble */}
                       <div 
                         style={{
-                          background: isMe ? "#0f766e" : "white",
-                          color: isMe ? "white" : "#1e293b",
+                          background: isMe ? "linear-gradient(135deg, #4f46e5, #6366f1)" : "var(--bg-panel)",
+                          color: "white",
+                          border: isMe ? "none" : "1px solid var(--border-muted)",
                           padding: m.messageType === "STICKER" ? "8px" : "10px 14px",
                           borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                           boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
@@ -670,8 +672,8 @@ export default function StudentMessagesPage() {
                             left: isMe ? "auto" : "100%",
                             top: "50%",
                             transform: "translateY(-50%)",
-                            background: "white",
-                            border: "1px solid #cbd5e1",
+                            background: "var(--bg-hover)",
+                            border: "1px solid var(--border-muted)",
                             borderRadius: "50%",
                             width: "24px",
                             height: "24px",
@@ -682,24 +684,24 @@ export default function StudentMessagesPage() {
                             margin: "0 6px",
                             boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
                             fontSize: "0.85rem",
-                            color: "#64748b"
+                            color: "var(--text-primary)"
                           }}
                           title="Reply/Quote"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v.5"/></svg>
                         </button>
-
+ 
                         {/* Quoted Message display */}
                         {m.parentMessage && (
                           <div style={{
-                            background: isMe ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.05)",
+                            background: isMe ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
                             padding: "6px 10px",
                             borderRadius: "8px",
                             fontSize: "0.75rem",
                             marginBottom: "6px",
-                            borderLeft: isMe ? "3px solid #ccfbf1" : "3px solid #0f766e"
+                            borderLeft: isMe ? "3px solid #a5b4fc" : "3px solid #6366f1"
                           }}>
-                            <div style={{ fontWeight: "bold", fontSize: "0.65rem", color: isMe ? "#ccfbf1" : "#0f766e", marginBottom: "2px" }}>
+                            <div style={{ fontWeight: "bold", fontSize: "0.65rem", color: isMe ? "#a5b4fc" : "#6366f1", marginBottom: "2px" }}>
                               {m.parentMessage.senderStudentId === myId ? "You" : activeChat.name}
                             </div>
                             <div style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
@@ -707,7 +709,7 @@ export default function StudentMessagesPage() {
                             </div>
                           </div>
                         )}
-
+ 
                         {/* Rich Content rendering */}
                         {m.messageType === "STICKER" && m.stickerUrl ? (
                           <img 
@@ -716,13 +718,13 @@ export default function StudentMessagesPage() {
                             style={{ width: "120px", height: "120px", objectFit: "contain", borderRadius: "12px" }}
                           />
                         ) : (
-                          <div style={{ fontSize: "0.875rem", lineHeight: "1.4" }}>{m.content}</div>
+                          <div style={{ fontSize: "0.875rem", lineHeight: "1.4", color: isMe ? "white" : "var(--text-primary)" }}>{m.content}</div>
                         )}
-
+ 
                         {/* Timestamp */}
                         <div style={{
                           fontSize: "0.6rem",
-                          color: isMe ? "rgba(255,255,255,0.6)" : "#94a3b8",
+                          color: isMe ? "rgba(255,255,255,0.6)" : "var(--text-muted)",
                           textAlign: "right",
                           marginTop: "4px"
                         }}>
@@ -734,11 +736,11 @@ export default function StudentMessagesPage() {
                 })}
                 <div ref={bottomRef} />
               </div>
-
+ 
               {/* Rich Footer: Quote bar, Emojis/Stickers Sheet, Input field */}
               <div style={{
-                background: "white",
-                borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+                background: "var(--bg-panel)",
+                borderTop: "1px solid var(--border-muted)",
                 padding: "12px 24px",
                 display: "flex",
                 flexDirection: "column",
@@ -751,14 +753,14 @@ export default function StudentMessagesPage() {
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "8px 12px",
-                    background: "#f1f5f9",
+                    background: "var(--bg-hover)",
                     borderRadius: "8px",
                     marginBottom: "8px",
-                    borderLeft: "4px solid #0f766e"
+                    borderLeft: "4px solid #6366f1"
                   }}>
                     <div style={{ fontSize: "0.8rem" }}>
-                      <span style={{ fontWeight: "bold", color: "#0f766e" }}>Replying to message: </span>
-                      <span style={{ color: "#475569" }}>{quotedMsg.content}</span>
+                      <span style={{ fontWeight: "bold", color: "#6366f1" }}>Replying to message: </span>
+                      <span style={{ color: "var(--text-primary)" }}>{quotedMsg.content}</span>
                     </div>
                     <button 
                       onClick={() => setQuotedMsg(null)}
@@ -768,15 +770,15 @@ export default function StudentMessagesPage() {
                     </button>
                   </div>
                 )}
-
+ 
                 {/* Stickers Selection Sheet */}
                 {showStickers && (
                   <div style={{
                     position: "absolute",
                     bottom: "100%",
                     left: "24px",
-                    background: "white",
-                    border: "1px solid #e2e8f0",
+                    background: "var(--bg-panel)",
+                    border: "1px solid var(--border-muted)",
                     borderRadius: "16px",
                     boxShadow: "0 -4px 12px rgba(0,0,0,0.08)",
                     padding: "16px",
@@ -785,7 +787,7 @@ export default function StudentMessagesPage() {
                     marginBottom: "10px"
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "bold", color: "#1e293b" }}>Lords Stickers</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-primary)" }}>Lords Stickers</span>
                       <button onClick={() => setShowStickers(false)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                       </button>
@@ -797,8 +799,8 @@ export default function StudentMessagesPage() {
                           onClick={() => sendSticker(sticker.url)}
                           title={sticker.name}
                           style={{
-                            background: "#f8fafc",
-                            border: "1px solid #f1f5f9",
+                            background: "var(--bg-deep)",
+                            border: "1px solid var(--border-muted)",
                             borderRadius: "10px",
                             padding: "6px",
                             cursor: "pointer",
@@ -807,8 +809,8 @@ export default function StudentMessagesPage() {
                             justifyContent: "center",
                             transition: "all 0.15s"
                           }}
-                          onMouseOver={(e) => e.currentTarget.style.background = "#e2e8f0"}
-                          onMouseOut={(e) => e.currentTarget.style.background = "#f8fafc"}
+                          onMouseOver={(e) => e.currentTarget.style.background = "var(--bg-hover)"}
+                          onMouseOut={(e) => e.currentTarget.style.background = "var(--bg-deep)"}
                         >
                           <img src={sticker.url} alt={sticker.name} style={{ width: "38px", height: "38px", objectFit: "contain" }} />
                         </button>
@@ -816,7 +818,7 @@ export default function StudentMessagesPage() {
                     </div>
                   </div>
                 )}
-
+ 
                 {/* Chat Inputs */}
                 <form onSubmit={sendMessage} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <button 
@@ -827,17 +829,17 @@ export default function StudentMessagesPage() {
                       height: "36px",
                       borderRadius: "50%",
                       border: "none",
-                      background: "#f1f5f9",
+                      background: "var(--bg-hover)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#64748b"
+                      color: "var(--text-secondary)"
                     }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
                   </button>
-
+ 
                   <input 
                     type="text" 
                     placeholder="Type a message..."
@@ -847,13 +849,14 @@ export default function StudentMessagesPage() {
                       flex: 1,
                       padding: "10px 18px",
                       borderRadius: "24px",
-                      border: "1px solid #e2e8f0",
+                      border: "1px solid var(--border-muted)",
                       fontSize: "0.875rem",
                       outline: "none",
-                      background: "#f8fafc"
+                      background: "rgba(255,255,255,0.03)",
+                      color: "var(--text-primary)"
                     }}
                   />
-
+ 
                   <button 
                     type="submit" 
                     style={{
@@ -862,12 +865,12 @@ export default function StudentMessagesPage() {
                       justifyContent: "center",
                       width: "38px",
                       height: "38px",
-                      background: "#0f766e",
+                      background: "linear-gradient(135deg, #4f46e5, #8b5cf6)",
                       color: "white",
                       border: "none",
                       borderRadius: "50%",
                       cursor: "pointer",
-                      boxShadow: "0 1px 3px rgba(15,118,110,0.2)"
+                      boxShadow: "0 2px 8px rgba(99,102,241,0.2)"
                     }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 3 9-3 9 19-9Z"/><path d="M6 12h16"/></svg>
@@ -877,12 +880,12 @@ export default function StudentMessagesPage() {
             </>
           ) : (
             // Empty State
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
-              <span style={{ color: "#cbd5e1" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)" }}>
+              <span style={{ color: "var(--border-muted)" }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </span>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "#1e293b", marginTop: "16px" }}>LeGeZt Chat Room</h2>
-              <p style={{ fontSize: "0.85rem", marginTop: "4px", color: "#94a3b8" }}>Select any active chat from the sidebar list to start chatting.</p>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "var(--text-primary)", marginTop: "16px" }}>LeGeZt Chat Room</h2>
+              <p style={{ fontSize: "0.85rem", marginTop: "4px", color: "var(--text-muted)" }}>Select any active chat from the sidebar list to start chatting.</p>
             </div>
           )}
         </div>

@@ -167,9 +167,9 @@ export default function StudentResultsPage() {
   const totalMaxPoints = results.reduce((acc, curr) => acc + curr.maxScore, 0);
 
   const performanceFeedback = () => {
-    if (avgPercentage >= 85) return { status: "Excellent", msg: "Aapka performance bohot badhiya hai! Keep maintaining this level.", color: "#a6e3a1", bg: "rgba(166, 227, 161, 0.1)" };
-    if (avgPercentage >= 65) return { status: "Good Effort", msg: "Aap achha kar rahe hain, thodi aur regular practice se grades aur behtar ho sakte hain.", color: "#89b4fa", bg: "rgba(137, 180, 250, 0.1)" };
-    return { status: "Focus Needed", msg: "Aapko concepts par thoda aur dhyan dene ki zaroorat hai. Faculty advisory se zaroor consult karein.", color: "#f38ba8", bg: "rgba(243, 139, 168, 0.1)" };
+    if (avgPercentage >= 85) return { status: "Excellent", msg: "Excellent performance! Keep maintaining this high standard.", color: "#a6e3a1", bg: "rgba(166, 227, 161, 0.1)" };
+    if (avgPercentage >= 65) return { status: "Good Effort", msg: "Good effort! You are performing well; a bit more regular practice will elevate your grades even further.", color: "#89b4fa", bg: "rgba(137, 180, 250, 0.1)" };
+    return { status: "Focus Needed", msg: "Focus needed. You should dedicate more time to understanding core concepts. Please schedule a consultation with your faculty advisor.", color: "#f38ba8", bg: "rgba(243, 139, 168, 0.1)" };
   };
 
   const feedback = performanceFeedback();
@@ -182,10 +182,8 @@ export default function StudentResultsPage() {
   return (
     <div
       style={{
-        padding: "30px 40px",
-        backgroundColor: "#07080d",
-        minHeight: "100vh",
-        color: "#cdd6f4",
+        padding: "24px",
+        color: "var(--text-primary)",
         fontFamily: "'Outfit', 'Inter', system-ui, sans-serif",
       }}
     >
@@ -256,10 +254,16 @@ export default function StudentResultsPage() {
             margin: "40px auto 0",
           }}
         >
-          <div style={{ fontSize: "3rem", marginBottom: "20px" }}>📊</div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", color: "var(--text-secondary)" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
           <h3 style={{ fontSize: "1.2rem", fontWeight: 700, marginBottom: "10px" }}>No Surprise Test Results</h3>
           <p style={{ color: "#a6adc8", fontSize: "0.85rem", lineHeight: "1.6" }}>
-            Aapne abhi tak koi test submit nahi kiya hai ya fir faculty ne abhi tak surprise exams ke results upload/publish nahi kiye hain. Jaise hi results release honge, wahi data yahan display ho jayega.
+            You have not submitted any test sheets yet, or the faculty has not published the results for surprise exams. Once published, your performance history will appear here.
           </p>
         </div>
       ) : (
@@ -278,7 +282,7 @@ export default function StudentResultsPage() {
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                 <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>📈</span> Performance Trend Chart
+                  Performance Trend Chart
                 </h3>
                 <span style={{ fontSize: "0.75rem", color: "#a6adc8" }}>Chronological Progression</span>
               </div>
@@ -286,10 +290,10 @@ export default function StudentResultsPage() {
                 <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />
               </div>
             </div>
-
+ 
             {/* List Header */}
             <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "10px 0 0", color: "#ffffff" }}>
-              📝 Surprise Tests Taken ({results.length})
+              Surprise Tests Taken ({results.length})
             </h3>
 
             {/* Premium Cards List (matching the app's Results items instead of basic table) */}
@@ -336,7 +340,10 @@ export default function StudentResultsPage() {
                             fontSize: "1.2rem",
                           }}
                         >
-                          📄
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                          </svg>
                         </div>
                         <div>
                           <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#ffffff", margin: 0 }}>
@@ -347,7 +354,7 @@ export default function StudentResultsPage() {
                           </span>
                         </div>
                       </div>
-
+ 
                       {/* Status badge matching Android app */}
                       <span
                         style={{
@@ -368,7 +375,7 @@ export default function StudentResultsPage() {
                         {isTerminated ? "TERMINATED" : isPass ? "PASSED" : "FAILED"}
                       </span>
                     </div>
-
+ 
                     {/* Progress score bar metric */}
                     <div style={{ marginTop: "4px" }}>
                       <div
@@ -404,7 +411,7 @@ export default function StudentResultsPage() {
                         />
                       </div>
                     </div>
-
+ 
                     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
                       <a
                         href={`/student/results/${r.id}`}
@@ -420,7 +427,7 @@ export default function StudentResultsPage() {
                           transition: "all 0.2s ease",
                         }}
                       >
-                        Review Test Answers 🔍
+                        Review Test Answers
                       </a>
                     </div>
                   </div>
@@ -433,7 +440,7 @@ export default function StudentResultsPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "30px", position: "sticky", top: "30px" }}>
             <div
               style={{
-                background: "#0f111a",
+                background: "var(--bg-panel)",
                 borderRadius: "16px",
                 padding: "30px 24px",
                 border: "1.5px solid rgba(255, 255, 255, 0.05)",
