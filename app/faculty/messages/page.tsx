@@ -34,7 +34,12 @@ export default function FacultyMessagesPage() {
     e.preventDefault();
     if (!input.trim() || !selected) return;
     const text = input; setInput("");
-    await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: text, receiverId: selected, receiverRole: "student" }) });
+    const res = await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: text, receiverId: selected, receiverRole: "student" }) });
+    if (!res.ok) {
+      alert("Message could not be sent. Confirm this student is assigned to you.");
+      setInput(text);
+      return;
+    }
     fetch(`/api/messages?with=${selected}`).then((r) => r.json()).then((d) => setMessages(d.messages ?? []));
   }
 

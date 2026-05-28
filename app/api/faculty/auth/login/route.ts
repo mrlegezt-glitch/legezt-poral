@@ -6,6 +6,10 @@ import { signAccessToken, signRefreshToken, checkRateLimit, resetRateLimit } fro
 
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
@@ -95,8 +99,8 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Faculty Login] Login successful for email: ${email}`);
     return res;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Faculty Login] Runtime error:", error);
-    return NextResponse.json({ error: `Internal Server Error: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Internal Server Error: ${getErrorMessage(error)}` }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
@@ -22,6 +22,11 @@ export async function GET() {
           profilePhotoUrl: true,
           lastLoginAt: true,
           examSubmissions: {
+            where: {
+              exam: {
+                facultyId: session.userId,
+              },
+            },
             include: {
               exam: {
                 select: { title: true }

@@ -1,7 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { BRANCHES, DESIGNATIONS, COLLEGE_NAME } from "@/lib/constants";
 
 export default function FacultyRegisterPage() {
@@ -9,14 +8,9 @@ export default function FacultyRegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [collegeName, setCollegeName] = useState(COLLEGE_NAME);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("selectedCollege");
-    if (stored) {
-      setCollegeName(stored);
-    }
-  }, []);
+  const [collegeName] = useState(() =>
+    typeof window === "undefined" ? COLLEGE_NAME : localStorage.getItem("selectedCollege") || COLLEGE_NAME
+  );
 
   function set(k: string, v: string) { setForm((f) => ({ ...f, [k]: v })); }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 interface Question {
   questionText: string;
@@ -72,16 +72,10 @@ export default function FacultyExamsPage() {
   const [monitorConnected, setMonitorConnected] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const monitorPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [selectedStudentLogs, setSelectedStudentLogs] = useState<Submission | null>(null);
 
-  // Load created exams
-  useEffect(() => {
-    if (view === "LIST") {
-      fetchExams();
-    }
-  }, [view]);
-
-  const fetchExams = async () => {
+  const fetchExams = useCallback(async () => {
     setLoadingExams(true);
     try {
       const res = await fetch("/api/faculty/me");
@@ -95,7 +89,14 @@ export default function FacultyExamsPage() {
     } finally {
       setLoadingExams(false);
     }
-  };
+  }, []);
+
+  // Load created exams
+  useEffect(() => {
+    if (view === "LIST") {
+      void Promise.resolve().then(fetchExams);
+    }
+  }, [view, fetchExams]);
 
   // Browser Geolocation auto-detection
   const handleAutoDetectLocation = () => {
@@ -108,7 +109,7 @@ export default function FacultyExamsPage() {
         setLatitude(position.coords.latitude.toFixed(6));
         setLongitude(position.coords.longitude.toFixed(6));
       },
-      (error) => {
+      () => {
         alert("Failed to capture location coordinates. Please enter manually.");
       },
       { enableHighAccuracy: true }
@@ -283,15 +284,15 @@ ${csvText}`;
       setMonitorConnected(false);
     };
 
-    // Store interval on the EventSource object for cleanup
-    (sse as any)._intervalId = pollInterval;
+    monitorPollRef.current = pollInterval;
   };
 
   const handleCloseMonitor = () => {
+    if (monitorPollRef.current) {
+      clearInterval(monitorPollRef.current);
+      monitorPollRef.current = null;
+    }
     if (eventSourceRef.current) {
-      if ((eventSourceRef.current as any)._intervalId) {
-        clearInterval((eventSourceRef.current as any)._intervalId);
-      }
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }

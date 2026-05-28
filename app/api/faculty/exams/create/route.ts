@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+type IncomingQuestion = {
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+  correctOption: string;
+  marks?: number;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 export async function POST(req: NextRequest) {
   const session = await getPortalSession();
   if (!session || session.role !== "faculty") {
@@ -10,8 +24,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const { title, durationMins, latitude, longitude, radiusMeters, questions } = await req.json();
+    const parsedQuestions = Array.isArray(questions) ? questions as IncomingQuestion[] : [];
 
-    if (!title || !durationMins || latitude === undefined || longitude === undefined) {
+    if (!title || !durationMins || latitude === undefined || longitude === undefined || parsedQuestions.length === 0) {
       return NextResponse.json({ error: "Missing required exam parameters" }, { status: 400 });
     }
 
@@ -25,7 +40,7 @@ export async function POST(req: NextRequest) {
         radiusMeters: Number(radiusMeters || 100),
         facultyId: session.userId,
         questions: {
-          create: (questions || []).map((q: any) => ({
+          create: parsedQuestions.map((q) => ({
             questionText: q.questionText,
             optionA: q.optionA,
             optionB: q.optionB,
@@ -82,7 +97,7 @@ export async function POST(req: NextRequest) {
     }).catch(err => console.error("Failed to load mail helper for active exam notification:", err));
 
     return NextResponse.json({ success: true, exam });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

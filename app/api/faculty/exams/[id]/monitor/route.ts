@@ -4,6 +4,10 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getPortalSession();
   if (!session || session.role !== "faculty") {
@@ -114,7 +118,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             });
 
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-          } catch (err: any) {
+          } catch (err: unknown) {
             console.error("SSE push error:", err);
           }
         };
@@ -141,7 +145,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         "X-Accel-Buffering": "no"
       }
     });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  } catch (error: unknown) {
+    return new Response(JSON.stringify({ error: getErrorMessage(error) }), { status: 500 });
   }
 }

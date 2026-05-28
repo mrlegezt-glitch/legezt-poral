@@ -12,6 +12,52 @@ const sendSchema = z.object({
   stickerUrl: z.string().optional(),
 });
 
+type MessageCreateData = {
+  content: string;
+  messageType: string;
+  stickerUrl: string | null;
+  parentMessageId: string | null;
+  senderStudentId?: string;
+  senderFacultyId?: string;
+  receiverStudentId?: string;
+  receiverFacultyId?: string;
+};
+
+async function canAccessConversation(session: { userId: string; role: "student" | "faculty" }, withId: string) {
+  if (session.role === "faculty") {
+    const mapping = await prisma.facultyStudentMap.findFirst({
+      where: { facultyId: session.userId, studentId: withId, isActive: true },
+      select: { id: true },
+    });
+    if (mapping) return true;
+
+    const facultyPeer = await prisma.portalFaculty.findUnique({
+      where: { id: withId },
+      select: { id: true },
+    });
+    return Boolean(facultyPeer);
+  }
+
+  const faculty = await prisma.portalFaculty.findUnique({
+    where: { id: withId },
+    select: { id: true },
+  });
+  if (faculty) return true;
+
+  const friendship = await prisma.portalFriendship.findFirst({
+    where: {
+      status: "ACCEPTED",
+      OR: [
+        { requesterId: session.userId, receiverId: withId },
+        { requesterId: withId, receiverId: session.userId },
+      ],
+    },
+    select: { id: true },
+  });
+
+  return Boolean(friendship);
+}
+
 // GET: Fetch conversation messages
 export async function GET(req: NextRequest) {
   const session = await getPortalSession();
@@ -20,6 +66,10 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const withId = searchParams.get("with");
   if (!withId) return NextResponse.json({ error: "Missing 'with' param" }, { status: 400 });
+
+  if (!(await canAccessConversation(session, withId))) {
+    return NextResponse.json({ error: "Conversation not allowed" }, { status: 403 });
+  }
 
   // Greedy approach: load last 50 msgs, ordered newest first for quick display
   const messages = await prisma.portalMessage.findMany({
@@ -79,7 +129,11 @@ export async function POST(req: NextRequest) {
   const { content, receiverId, receiverRole, messageType, parentMessageId, stickerUrl } = parsed.data;
   const normalizedRole = receiverRole.toLowerCase();
 
-  const data: Record<string, any> = { 
+  if (!(await canAccessConversation(session, receiverId))) {
+    return NextResponse.json({ error: "Recipient not allowed" }, { status: 403 });
+  }
+
+  const data: MessageCreateData = {
     content,
     messageType: messageType ?? "TEXT",
     stickerUrl: stickerUrl ?? null,
@@ -90,6 +144,6 @@ export async function POST(req: NextRequest) {
   if (normalizedRole === "student") data.receiverStudentId = receiverId;
   else data.receiverFacultyId = receiverId;
 
-  const message = await prisma.portalMessage.create({ data: data as any });
+  const message = await prisma.portalMessage.create({ data });
   return NextResponse.json({ message }, { status: 201 });
 }

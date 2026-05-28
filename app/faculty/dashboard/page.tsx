@@ -20,8 +20,8 @@ export default function FacultyDashboard() {
   return (
     <div className="portal-main">
       <div className="portal-topbar">
-        <div className="portal-topbar-title">Welcome, {faculty.fullName.split(" ")[0]}!</div>
-        <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{faculty.designation} · {faculty.department}</div>
+        <div className="portal-topbar-title">Welcome, {faculty.fullName.split(" ")[0]}</div>
+        <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{faculty.designation} - {faculty.department}</div>
       </div>
       <div className="portal-content">
         <div className="stats-grid">
@@ -31,11 +31,11 @@ export default function FacultyDashboard() {
           </div>
           <div className="stat-card">
             <div className="stat-label">Active</div>
-            <div className="stat-value">{students.filter((s) => s.status === "active").length}</div>
+            <div className="stat-value">{students.filter((s) => ["active", "approved"].includes(s.status.toLowerCase())).length}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Branches</div>
-            <div className="stat-value" style={{ fontSize: "1.3rem" }}>{Object.keys(byBranch).join(", ") || "—"}</div>
+            <div className="stat-value" style={{ fontSize: "1.3rem" }}>{Object.keys(byBranch).join(", ") || "-"}</div>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 
 type Faculty = { id: string; fullName: string; username: string; workEmail: string; designation: string; department: string; profilePhotoUrl?: string; studentCount?: number; };
@@ -39,7 +40,7 @@ export default function FacultyShell({ children }: { children: React.ReactNode }
       {mobileOpen && <div className="portal-mobile-overlay" onClick={() => setMobileOpen(false)} />}
       <aside className={`portal-sidebar faculty ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <img src="/logo.png" alt="Portal Logo" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
+          <Image src="/logo.png" alt="Portal Logo" width={32} height={32} style={{ borderRadius: "50%" }} />
           LIET FACULTY
         </div>
         <nav className="sidebar-nav">

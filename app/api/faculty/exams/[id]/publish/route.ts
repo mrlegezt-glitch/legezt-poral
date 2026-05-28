@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getPortalSession();
   if (!session || session.role !== "faculty") {
@@ -101,7 +105,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       message: isPublished ? "Results published successfully" : "Results retracted",
       isPublished
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

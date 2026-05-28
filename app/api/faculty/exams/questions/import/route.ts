@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/auth";
 
+type ParsedQuestion = {
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+  correctOption: string;
+  marks: number;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 export async function POST(req: NextRequest) {
   const session = await getPortalSession();
   if (!session || session.role !== "faculty") {
@@ -59,7 +73,7 @@ export async function POST(req: NextRequest) {
       }, { status: 422 });
     }
 
-    const questions: any[] = [];
+    const questions: ParsedQuestion[] = [];
     const errors: string[] = [];
     const requiredHeaders = ["question", "option_a", "option_b", "option_c", "option_d", "correct_option", "marks"];
 
@@ -110,8 +124,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, questions });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
