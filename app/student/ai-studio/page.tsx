@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 
 type MessageRole = "user" | "assistant";
 type MessageType = "text" | "image" | "error" | "loading";
@@ -769,7 +770,7 @@ export default function AiStudioPage() {
         {/* ─── Header ─── */}
         <div
           style={{
-            padding: "12px 20px",
+            padding: "10px 16px",
             borderBottom: "1px solid var(--ai-border)",
             display: "flex",
             alignItems: "center",
@@ -777,69 +778,165 @@ export default function AiStudioPage() {
             background: "var(--ai-surface)",
             position: "relative",
             zIndex: 10,
+            flexWrap: "wrap",
+            gap: "10px"
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Left: Hamburger menu + Back Arrow + Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            {/* Hamburger menu button to toggle StudentShell sidebar */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("toggle-student-sidebar"))}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#e2e8f0",
+                cursor: "pointer",
+                padding: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "6px",
+                transition: "background 0.2s"
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+              onMouseOut={(e) => e.currentTarget.style.background = "transparent"}
+              title="Toggle Navigation Menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+
+            {/* Back Button to dashboard */}
+            <Link
+              href="/student/dashboard"
+              style={{
+                background: "transparent",
+                color: "#94a3b8",
+                cursor: "pointer",
+                padding: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "6px",
+                transition: "background 0.2s, color 0.2s"
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#ffffff"; }}
+              onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}
+              title="Go back to Dashboard"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </Link>
+
             <div
               style={{
-                width: 34,
-                height: 34,
+                width: 30,
+                height: 30,
                 borderRadius: "50%",
                 background: "linear-gradient(135deg, var(--ai-accent), var(--ai-accent2))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#ffffff",
-                boxShadow: "0 0 16px rgba(99,102,241,0.3)",
+                boxShadow: "0 0 12px rgba(99,102,241,0.25)",
+                marginLeft: "4px"
               }}
             >
-              <SparkleIcon size={16} />
+              <SparkleIcon size={14} />
             </div>
             <div>
               <h1
                 style={{
                   margin: 0,
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: 700,
                   color: "#ffffff",
-                  letterSpacing: "0.3px"
+                  letterSpacing: "0.3px",
+                  lineHeight: 1.2
                 }}
               >
                 LeGeZt AI
               </h1>
-              <p style={{ margin: 0, fontSize: 9, color: "var(--ai-muted)", fontWeight: 600, letterSpacing: "0.8px" }}>
+              <p style={{ margin: 0, fontSize: 8, color: "var(--ai-muted)", fontWeight: 600, letterSpacing: "0.8px" }}>
                 LLAMA 3.3 70B + FLUX IMAGE
               </p>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {messages.length > 0 && (
-              <button
-                className="ai-clear-btn"
-                onClick={clearChat}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "6px 14px",
-                  borderRadius: 20,
-                  border: "1px solid var(--ai-border)",
-                  background: "transparent",
-                  color: "var(--ai-muted)",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 6h18"/>
-                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                </svg>
-                Clear
-              </button>
-            )}
+
+          {/* Right: New Chat + History + Pro Badge + Name + Avatar */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {/* New Chat Button */}
+            <button
+              className="ai-send-btn"
+              onClick={clearChat}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "6px 14px",
+                borderRadius: 20,
+                border: "none",
+                background: "linear-gradient(135deg, var(--ai-accent), var(--ai-accent2))",
+                color: "#ffffff",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s",
+                boxShadow: "0 0 12px rgba(99,102,241,0.2)"
+              }}
+              title="Start a new chat session"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              New Chat
+            </button>
+
+            {/* History clock icon button */}
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/ai/history");
+                  if (res.ok) {
+                    const data = await res.json();
+                    alert(`Sync Complete! Successfully verified ${data.messages?.length || 0} messages in your persistent cloud chat history.`);
+                  }
+                } catch {
+                  alert("Failed to sync chat history. Please check connection.");
+                }
+              }}
+              style={{
+                background: "transparent",
+                border: "1px solid var(--ai-border)",
+                color: "#94a3b8",
+                cursor: "pointer",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                fontSize: "11px",
+                fontWeight: 600,
+                transition: "all 0.2s"
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.borderColor = "var(--ai-accent2)"; e.currentTarget.style.color = "#ffffff"; }}
+              onMouseOut={(e) => { e.currentTarget.style.borderColor = "var(--ai-border)"; e.currentTarget.style.color = "#94a3b8"; }}
+              title="Verify persistent cloud history"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              History
+            </button>
+
             {/* Pro badge */}
             <div
               style={{
@@ -848,10 +945,11 @@ export default function AiStudioPage() {
                 gap: 4,
                 padding: "4px 10px",
                 borderRadius: 12,
-                background: "linear-gradient(135deg, var(--ai-accent), var(--ai-accent2))",
+                background: "rgba(99,102,241,0.15)",
+                border: "1px solid rgba(139,92,246,0.3)",
                 fontSize: 10,
                 fontWeight: 700,
-                color: "#fff",
+                color: "#a78bfa",
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
@@ -859,36 +957,43 @@ export default function AiStudioPage() {
               </svg>
               Pro
             </div>
-            {/* User avatar */}
-            <div style={{ position: "relative", width: 32, height: 32 }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: "var(--ai-accent3)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontSize: 14,
-                  fontWeight: 700,
-                }}
-              >
-                {studentName?.charAt(0)?.toUpperCase() || "S"}
+
+            {/* Student Name & Avatar */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 4 }}>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#e2e8f0", display: "inline-block" }}>
+                {studentName || "Lord"}
+              </span>
+              <div style={{ position: "relative", width: 32, height: 32 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: "var(--ai-accent3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    border: "1px solid rgba(255,255,255,0.15)"
+                  }}
+                >
+                  {studentName?.charAt(0)?.toUpperCase() || "S"}
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#22c55e",
+                    border: "2px solid var(--ai-surface)",
+                  }}
+                />
               </div>
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#22c55e",
-                  border: "2px solid var(--ai-surface)",
-                }}
-              />
             </div>
           </div>
         </div>

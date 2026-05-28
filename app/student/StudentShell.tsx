@@ -91,6 +91,10 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       .then((r) => r.ok ? r.json() : Promise.reject())
       .then((d) => setStudent(d.student))
       .catch(() => router.push("/student/login"));
+
+    const handleToggle = () => setMobileOpen((prev) => !prev);
+    window.addEventListener("toggle-student-sidebar", handleToggle);
+    return () => window.removeEventListener("toggle-student-sidebar", handleToggle);
   }, [router]);
 
   async function logout() {
@@ -162,16 +166,18 @@ export default function StudentShell({ children }: { children: React.ReactNode }
         </div>
       </aside>
       <main className="portal-main">
-        <div className="portal-mobile-toggle-header" style={{ alignItems: "center", padding: "16px 20px", background: "var(--bg-panel)", borderBottom: "1px solid var(--border-muted)" }}>
-          <button onClick={() => setMobileOpen(true)} className="portal-mobile-toggle">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-          <div style={{ fontFamily: "var(--font-display)", fontWeight: "bold", letterSpacing: "1px" }}>LIET PORTAL</div>
-        </div>
+        {pathname !== "/student/ai-studio" && (
+          <div className="portal-mobile-toggle-header" style={{ alignItems: "center", padding: "16px 20px", background: "var(--bg-panel)", borderBottom: "1px solid var(--border-muted)" }}>
+            <button onClick={() => setMobileOpen(true)} className="portal-mobile-toggle">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+            <div style={{ fontFamily: "var(--font-display)", fontWeight: "bold", letterSpacing: "1px" }}>LIET PORTAL</div>
+          </div>
+        )}
         <div style={{ flex: 1, overflowY: isMessagesPage ? "hidden" : "auto", display: "flex", flexDirection: "column" }}>
           {children}
         </div>
