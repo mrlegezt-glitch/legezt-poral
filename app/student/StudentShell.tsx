@@ -6,19 +6,20 @@ import { useRouter, usePathname } from "next/navigation";
 type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; enrollmentNo: string; collegeName: string; profilePhotoUrl?: string; status: string; };
 
 const navItems = [
-  { href: "/student/dashboard", label: "Dashboard" },
-  { href: "/student/messages", label: "Messages" },
-  { href: "/student/documents", label: "Documents" },
-  { href: "/student/exams", label: "Surprise Exams" },
-  { href: "/student/results", label: "Results" },
-  { href: "/student/profile", label: "Profile" },
+  { href: "/student/dashboard", label: "🏠 Dashboard" },
+  { href: "/student/ai-studio", label: "✨ AI Studio" },
+  { href: "/student/messages", label: "💬 Messages" },
+  { href: "/student/documents", label: "📄 Documents" },
+  { href: "/student/exams", label: "📝 Surprise Exams" },
+  { href: "/student/results", label: "🏆 Results" },
+  { href: "/student/profile", label: "👤 Profile" },
 ];
 
 export default function StudentShell({ children }: { children: React.ReactNode }) {
   const [student, setStudent] = useState<Student | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const isMessagesPage = pathname === "/student/messages";
+  const isMessagesPage = pathname === "/student/messages" || pathname === "/student/ai-studio";
   const router = useRouter();
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
           {/* Install Mobile App Button */}
           <a
-            href="https://drive.google.com/uc?export=download&id=16AIqV0cCbOjIHUMn6lpVRV2nK_V_g3HO"
+            href="https://portal.mrlegezt.me/update.apk"
             target="_blank"
             rel="noopener noreferrer"
             style={{
