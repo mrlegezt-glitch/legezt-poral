@@ -224,7 +224,29 @@ export default function StudentMessagesPage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", overflow: "hidden", padding: 0, fontFamily: "'Inter', sans-serif" }}>
+    <>
+      <style>{`
+        .messages-page-container {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          overflow: hidden;
+          padding: 0;
+          font-family: 'Inter', sans-serif;
+          background: #f8fafc;
+        }
+        @media (min-width: 769px) {
+          .messages-page-container {
+            height: 100vh !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .messages-page-container {
+            height: calc(100vh - 58px) !important;
+          }
+        }
+      `}</style>
+      <div className="messages-page-container">
       {/* Visual Header */}
       <div style={{
         padding: "16px 24px",
@@ -866,5 +888,6 @@ export default function StudentMessagesPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -498,6 +498,10 @@ export default function AiStudioPage() {
           0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
           40% { transform: scale(1); opacity: 1; }
         }
+        @keyframes aiSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
         @keyframes aiSlideIn {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
@@ -506,6 +510,26 @@ export default function AiStudioPage() {
           0% { transform: translate(0, 0) scale(1); }
           50% { transform: translate(30px, -15px) scale(1.1); }
           100% { transform: translate(0, 0) scale(1); }
+        }
+        .ai-studio-container {
+          display: flex;
+          flex-direction: column;
+          background: var(--ai-bg);
+          color: var(--ai-text);
+          font-family: 'Inter', system-ui, sans-serif;
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+        }
+        @media (min-width: 769px) {
+          .ai-studio-container {
+            height: 100vh !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .ai-studio-container {
+            height: calc(100vh - 58px) !important;
+          }
         }
         .ai-msg-row { animation: aiSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
         .ai-send-btn:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.1); }
@@ -587,10 +611,10 @@ export default function AiStudioPage() {
       `}</style>
 
       <div
+        className="ai-studio-container"
         style={{
           display: "flex",
           flexDirection: "column",
-          height: "100%",
           background: "var(--ai-bg)",
           color: "var(--ai-text)",
           fontFamily: "'Inter', system-ui, sans-serif",
@@ -991,6 +1015,7 @@ export default function AiStudioPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                padding: 0,
                 transition: "transform 0.2s, box-shadow 0.2s, opacity 0.2s",
                 boxShadow: "0 4px 16px rgba(99,102,241,0.35)",
               }}
@@ -998,12 +1023,13 @@ export default function AiStudioPage() {
               {isGenerating ? (
                 <div
                   style={{
-                    width: 16,
-                    height: 16,
+                    width: 18,
+                    height: 18,
                     borderRadius: "50%",
                     border: "2px solid #ffffff",
                     borderTopColor: "transparent",
-                    animation: "aiPulse 1s infinite linear",
+                    animation: "aiSpin 0.8s infinite linear",
+                    boxSizing: "border-box",
                   }}
                 />
               ) : (
