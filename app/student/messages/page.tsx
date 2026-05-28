@@ -22,19 +22,19 @@ type Msg = {
 };
 
 type Faculty = { id: string; fullName: string; designation: string; department: string; };
-type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; };
+type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; friendshipId?: string | null; };
 type FriendSearchResult = Student & { friendshipStatus: string; friendshipId: string | null; };
 type FriendshipRequest = { id: string; createdAt: string; sender?: Student; receiver?: Student; };
 
 const CUSTOM_STICKERS = [
-  { id: "wink", name: "😉 Wink", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f609/512.webp" },
-  { id: "cool", name: "😎 Cool", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp" },
-  { id: "crazy", name: "🤪 Crazy", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f92a/512.webp" },
-  { id: "fist", name: "👊 Fist Bump", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44a/512.webp" },
-  { id: "flex", name: "💪 Flex", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f4aa/512.webp" },
-  { id: "rocket", name: "🚀 Lords Rocket", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f680/512.webp" },
-  { id: "trophy", name: "🏆 First Rank", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3c6/512.webp" },
-  { id: "studying", name: "📚 Exam Study", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f4d6/512.webp" }
+  { id: "wink", name: "Wink", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f609/512.webp" },
+  { id: "cool", name: "Cool", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp" },
+  { id: "crazy", name: "Crazy", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f92a/512.webp" },
+  { id: "fist", name: "Fist Bump", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44a/512.webp" },
+  { id: "flex", name: "Flex", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f4aa/512.webp" },
+  { id: "rocket", name: "Lords Rocket", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f680/512.webp" },
+  { id: "trophy", name: "Trophy", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3c6/512.webp" },
+  { id: "studying", name: "Exam Study", url: "https://fonts.gstatic.com/s/e/notoemoji/latest/1f4d6/512.webp" }
 ];
 
 export default function StudentMessagesPage() {
@@ -147,7 +147,7 @@ export default function StudentMessagesPage() {
     if (res.ok) {
       setSearchQuery("");
       loadConnections();
-      alert("Friend request bheja gaya!");
+      alert("Friend request sent!");
     } else {
       const err = await res.json();
       alert(err.error || "Request failed");
@@ -166,7 +166,7 @@ export default function StudentMessagesPage() {
   }
 
   async function removeFriendship(id: string) {
-    if (!confirm("Are you sure?")) return;
+    if (!confirm("Are you sure you want to unfriend this classmate?")) return;
     const res = await fetch(`/api/student/friends/${id}`, { method: "DELETE" });
     if (res.ok) {
       if (activeChat?.id === id) setActiveChat(null);
@@ -224,7 +224,7 @@ export default function StudentMessagesPage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", overflow: "hidden", padding: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", overflow: "hidden", padding: 0, fontFamily: "'Inter', sans-serif" }}>
       {/* Visual Header */}
       <div style={{
         padding: "16px 24px",
@@ -235,11 +235,13 @@ export default function StudentMessagesPage() {
         alignItems: "center",
         justifyContent: "space-between"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontSize: "24px" }}>🚀</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ color: "#0f766e", display: "flex", alignItems: "center" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5s3-1 5.5-2.5C9.37 20.8 11.61 21 14 21c7.18 0 10-7.18 10-10 0-2.42-.2-4.63-.5-6.5H21a12 12 0 0 0-12 12c0 2.39.2 4.63.5 6.5-2.5 1.5-5.5.5-5.5.5Z"/><path d="M12 12a3 3 0 1 0-6 0c0 .83.34 1.58.88 2.12L12 12Z"/></svg>
+          </span>
           <div>
             <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#1e293b" }}>LeGeZt Message Studio</h1>
-            <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>WhatsApp-like clean, real-time messaging chamber</p>
+            <p style={{ margin: 0, fontSize: "0.75rem", color: "#64748b" }}>Secure real-time academic messenger channel</p>
           </div>
         </div>
       </div>
@@ -256,15 +258,15 @@ export default function StudentMessagesPage() {
         }}>
           {/* Search Classmates */}
           <div style={{ padding: "16px", borderBottom: "1px solid #f1f5f9" }}>
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
               <input 
                 type="text"
-                placeholder="Classmates search karein (Name, Roll No...)"
+                placeholder="Search classmates by name or roll number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "10px 14px",
+                  padding: "10px 14px 10px 36px",
                   borderRadius: "20px",
                   border: "1px solid #cbd5e1",
                   fontSize: "0.875rem",
@@ -272,12 +274,15 @@ export default function StudentMessagesPage() {
                   transition: "all 0.2s"
                 }}
               />
+              <span style={{ position: "absolute", left: "14px", color: "#94a3b8", display: "flex", alignItems: "center" }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
               {searchQuery && (
                 <button 
                   onClick={() => setSearchQuery("")}
-                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "#64748b" }}
+                  style={{ position: "absolute", right: "12px", border: "none", background: "none", cursor: "pointer", color: "#64748b", display: "flex", alignItems: "center" }}
                 >
-                  ✕
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
               )}
             </div>
@@ -320,11 +325,11 @@ export default function StudentMessagesPage() {
             {searchQuery ? (
               // Search Results pane
               <div style={{ padding: "12px" }}>
-                <h3 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "8px", marginBottom: "8px" }}>
+                <h3 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "8px", marginBottom: "8px", fontWeight: "bold" }}>
                   {isSearching ? "Searching..." : `Search Results (${searchResults.length})`}
                 </h3>
                 {searchResults.length === 0 && !isSearching && (
-                  <div style={{ textAlign: "center", padding: "24px", color: "#64748b", fontSize: "0.875rem" }}>Koi classmate nahi mila.</div>
+                  <div style={{ textAlign: "center", padding: "24px", color: "#64748b", fontSize: "0.875rem" }}>No classmates found.</div>
                 )}
                 {searchResults.map((stu) => (
                   <div key={stu.id} style={{
@@ -338,7 +343,7 @@ export default function StudentMessagesPage() {
                   }}>
                     <div>
                       <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "#1e293b" }}>{stu.fullName}</div>
-                      <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{stu.branch} · {stu.year} Year</div>
+                      <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{stu.branch} · Year {stu.year}</div>
                     </div>
                     {stu.friendshipStatus === "NONE" && (
                       <button 
@@ -352,7 +357,7 @@ export default function StudentMessagesPage() {
                       <span style={{ fontSize: "0.75rem", color: "#f59e0b", background: "#fef3c7", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Sent</span>
                     )}
                     {stu.friendshipStatus === "PENDING_RECEIVED" && (
-                      <span style={{ fontSize: "0.75rem", color: "#0f766e", background: "#ccfbf1", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Accept Karein</span>
+                      <span style={{ fontSize: "0.75rem", color: "#0f766e", background: "#ccfbf1", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Pending Accept</span>
                     )}
                     {stu.friendshipStatus === "ACCEPTED" && (
                       <span style={{ fontSize: "0.75rem", color: "#10b981", background: "#d1fae5", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Friends</span>
@@ -382,12 +387,12 @@ export default function StudentMessagesPage() {
                         }}
                       >
                         <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#0f766e", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
-                          🎓
+                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <span style={{ fontSize: "0.875rem", fontWeight: "700", color: "#1e293b" }}>{assignedFaculty.fullName}</span>
-                            <span style={{ fontSize: "0.65rem", background: "#0f766e", color: "white", padding: "2px 6px", borderRadius: "8px", fontWeight: "bold" }}>Mentor</span>
+                            <span style={{ fontSize: "0.65rem", background: "#0f766e", color: "white", padding: "2px 6px", borderRadius: "8px", fontWeight: "bold" }}>Advisor</span>
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{assignedFaculty.designation} · {assignedFaculty.department}</div>
                         </div>
@@ -399,8 +404,10 @@ export default function StudentMessagesPage() {
                     {/* Student Friends chats */}
                     {friends.length === 0 && (
                       <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
-                        <span style={{ fontSize: "2rem" }}>💬</span>
-                        <div style={{ fontSize: "0.875rem", marginTop: "8px" }}>Koi chat active nahi hai. Classmates search karke add karein!</div>
+                        <div style={{ display: "flex", justifyContent: "center", color: "#cbd5e1" }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div style={{ fontSize: "0.875rem", marginTop: "8px" }}>No active chats. Search and add classmates to start a conversation.</div>
                       </div>
                     )}
                     {friends.map((friend) => (
@@ -419,14 +426,14 @@ export default function StudentMessagesPage() {
                           marginBottom: "4px"
                         }}
                       >
-                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#cbd5e1", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
+                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#e2e8f0", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
                           {friend.fullName[0]}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "#1e293b" }}>{friend.fullName}</span>
                           </div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{friend.branch} · {friend.year} Year</div>
+                          <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>{friend.branch} · Year {friend.year}</div>
                         </div>
                       </div>
                     ))}
@@ -438,7 +445,7 @@ export default function StudentMessagesPage() {
                   <div style={{ padding: "8px" }}>
                     {friends.length === 0 && (
                       <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
-                        <div style={{ fontSize: "0.875rem" }}>Aapka koi friend nahi hai.</div>
+                        <div style={{ fontSize: "0.875rem" }}>Your friends list is currently empty.</div>
                       </div>
                     )}
                     {friends.map((friend) => (
@@ -458,19 +465,20 @@ export default function StudentMessagesPage() {
                           </div>
                           <div>
                             <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{friend.fullName}</div>
-                            <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{friend.branch} · {friend.year} Year</div>
+                            <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{friend.branch} · Year {friend.year}</div>
                           </div>
                         </div>
                         <button 
                           onClick={() => {
-                            fetch(`/api/student/friends`).then(r => r.json()).then(d => {
-                              // Find friendshipId
-                              alert("Severing friendship...");
-                            });
+                            if (friend.friendshipId) {
+                              removeFriendship(friend.friendshipId);
+                            } else {
+                              removeFriendship(friend.id);
+                            }
                           }}
-                          style={{ background: "none", border: "none", color: "#ef4444", fontSize: "0.75rem", cursor: "pointer" }}
+                          style={{ background: "none", border: "none", color: "#ef4444", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600 }}
                         >
-                          Unfriend
+                          Remove Friend
                         </button>
                       </div>
                     ))}
@@ -481,11 +489,11 @@ export default function StudentMessagesPage() {
                 {activeTab === "requests" && (
                   <div style={{ padding: "12px" }}>
                     {/* Incoming requests */}
-                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px" }}>
+                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px", fontWeight: "bold" }}>
                       Received Requests ({incomingRequests.length})
                     </h4>
                     {incomingRequests.length === 0 && (
-                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px", marginBottom: "16px" }}>Koi pending request nahi hai.</div>
+                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px", marginBottom: "16px" }}>No pending requests.</div>
                     )}
                     {incomingRequests.map((req) => (
                       <div key={req.id} style={{
@@ -499,7 +507,7 @@ export default function StudentMessagesPage() {
                       }}>
                         <div>
                           <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{req.sender?.fullName}</div>
-                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.sender?.branch} · {req.sender?.year} Year</div>
+                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.sender?.branch} · Year {req.sender?.year}</div>
                         </div>
                         <div style={{ display: "flex", gap: "6px" }}>
                           <button 
@@ -521,11 +529,11 @@ export default function StudentMessagesPage() {
                     <div style={{ height: "1px", background: "#e2e8f0", margin: "16px 0" }} />
 
                     {/* Outgoing requests */}
-                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px" }}>
+                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px", fontWeight: "bold" }}>
                       Sent Requests ({outgoingRequests.length})
                     </h4>
                     {outgoingRequests.length === 0 && (
-                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px" }}>Bheji gayi koi pending request nahi hai.</div>
+                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px" }}>No outgoing pending requests.</div>
                     )}
                     {outgoingRequests.map((req) => (
                       <div key={req.id} style={{
@@ -539,7 +547,7 @@ export default function StudentMessagesPage() {
                       }}>
                         <div>
                           <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{req.receiver?.fullName}</div>
-                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.receiver?.branch} · {req.receiver?.year} Year</div>
+                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.receiver?.branch} · Year {req.receiver?.year}</div>
                         </div>
                         <button 
                           onClick={() => removeFriendship(req.id)}
@@ -571,12 +579,14 @@ export default function StudentMessagesPage() {
                 boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
               }}>
                 <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: activeChat.type === "faculty" ? "#0f766e" : "#64748b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
-                  {activeChat.type === "faculty" ? "🎓" : activeChat.name[0]}
+                  {activeChat.type === "faculty" ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                  ) : activeChat.name[0]}
                 </div>
                 <div>
                   <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#1e293b" }}>{activeChat.name}</div>
-                  <div style={{ fontSize: "0.75rem", color: "#0f766e", fontWeight: "600", textTransform: "capitalize" }}>
-                    {activeChat.type} Advisor/Classmate
+                  <div style={{ fontSize: "0.75rem", color: "#0f766e", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    {activeChat.type} connection
                   </div>
                 </div>
               </div>
@@ -593,9 +603,11 @@ export default function StudentMessagesPage() {
               }}>
                 {messages.length === 0 && (
                   <div style={{ alignSelf: "center", margin: "auto", textAlign: "center", color: "#64748b" }}>
-                    <span style={{ fontSize: "2.5rem" }}>💬</span>
-                    <div style={{ fontSize: "0.9rem", fontWeight: "bold", marginTop: "10px" }}>Baa-cheet Shuru Karein!</div>
-                    <div style={{ fontSize: "0.75rem", marginTop: "4px" }}>Say hello or quote a reply in this secure conversation.</div>
+                    <div style={{ display: "flex", justifyContent: "center", color: "#cbd5e1", marginBottom: "8px" }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>Start a conversation!</div>
+                    <div style={{ fontSize: "0.75rem", marginTop: "4px" }}>Say hello or reply in this secure chat.</div>
                   </div>
                 )}
 
@@ -647,11 +659,12 @@ export default function StudentMessagesPage() {
                             cursor: "pointer",
                             margin: "0 6px",
                             boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                            fontSize: "0.65rem"
+                            fontSize: "0.85rem",
+                            color: "#64748b"
                           }}
                           title="Reply/Quote"
                         >
-                          ↩
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v.5"/></svg>
                         </button>
 
                         {/* Quoted Message display */}
@@ -665,7 +678,7 @@ export default function StudentMessagesPage() {
                             borderLeft: isMe ? "3px solid #ccfbf1" : "3px solid #0f766e"
                           }}>
                             <div style={{ fontWeight: "bold", fontSize: "0.65rem", color: isMe ? "#ccfbf1" : "#0f766e", marginBottom: "2px" }}>
-                              {m.parentMessage.senderStudentId === myId ? "Aap" : activeChat.name}
+                              {m.parentMessage.senderStudentId === myId ? "You" : activeChat.name}
                             </div>
                             <div style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
                               {m.parentMessage.content}
@@ -727,9 +740,9 @@ export default function StudentMessagesPage() {
                     </div>
                     <button 
                       onClick={() => setQuotedMsg(null)}
-                      style={{ background: "none", border: "none", fontSize: "0.875rem", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }}
+                      style={{ background: "none", border: "none", display: "flex", alignItems: "center", color: "#ef4444", cursor: "pointer" }}
                     >
-                      ✕
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                     </button>
                   </div>
                 )}
@@ -750,8 +763,10 @@ export default function StudentMessagesPage() {
                     marginBottom: "10px"
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "bold", color: "#1e293b" }}>Lords College Stickers</span>
-                      <button onClick={() => setShowStickers(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>✕</button>
+                      <span style={{ fontSize: "0.8rem", fontWeight: "bold", color: "#1e293b" }}>Lords Stickers</span>
+                      <button onClick={() => setShowStickers(false)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                      </button>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
                       {CUSTOM_STICKERS.map((sticker) => (
@@ -791,19 +806,19 @@ export default function StudentMessagesPage() {
                       borderRadius: "50%",
                       border: "none",
                       background: "#f1f5f9",
-                      fontSize: "1.2rem",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center"
+                      justifyContent: "center",
+                      color: "#64748b"
                     }}
                   >
-                    🎨
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
                   </button>
 
                   <input 
                     type="text" 
-                    placeholder="Message write karein..."
+                    placeholder="Type a message..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     style={{
@@ -820,18 +835,20 @@ export default function StudentMessagesPage() {
                   <button 
                     type="submit" 
                     style={{
-                      padding: "10px 20px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "38px",
+                      height: "38px",
                       background: "#0f766e",
                       color: "white",
                       border: "none",
-                      borderRadius: "24px",
-                      fontSize: "0.875rem",
-                      fontWeight: "bold",
+                      borderRadius: "50%",
                       cursor: "pointer",
                       boxShadow: "0 1px 3px rgba(15,118,110,0.2)"
                     }}
                   >
-                    Send
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 3 3 9-3 9 19-9Z"/><path d="M6 12h16"/></svg>
                   </button>
                 </form>
               </div>
@@ -839,7 +856,9 @@ export default function StudentMessagesPage() {
           ) : (
             // Empty State
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#64748b" }}>
-              <span style={{ fontSize: "3.5rem" }}>💬</span>
+              <span style={{ color: "#cbd5e1" }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </span>
               <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "#1e293b", marginTop: "16px" }}>LeGeZt Chat Room</h2>
               <p style={{ fontSize: "0.85rem", marginTop: "4px", color: "#94a3b8" }}>Select any active chat from the sidebar list to start chatting.</p>
             </div>

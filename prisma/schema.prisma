@@ -41,6 +41,7 @@ model PortalStudent {
   examSubmissions  ExamSubmission[]
   serviceRequests  PortalServiceRequest[]
   notifications    Notification[]
+  aiChatHistory    AiChatMessage[]
 }
 
 // ─── PORTAL FACULTY ────────────────────────────────────────────────────────────
@@ -344,5 +345,17 @@ model PortalFriendship {
   updatedAt   DateTime @updatedAt
 
   @@unique([requesterId, receiverId])
+}
+
+model AiChatMessage {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  studentId    String   @db.ObjectId
+  role         String   // "user" | "assistant"
+  type         String   // "text" | "image" | "error"
+  content      String   // text reply or base64 image data
+  imagePrompt  String?  // prompt for image generation (if type is image)
+  createdAt    DateTime @default(now())
+
+  student      PortalStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 

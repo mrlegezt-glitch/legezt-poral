@@ -120,6 +120,19 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const friends = friendsDetails.map((friend) => {
+      const rel = allFriendships.find(
+        (f) =>
+          f.status === "ACCEPTED" &&
+          ((f.requesterId === myId && f.receiverId === friend.id) ||
+            (f.requesterId === friend.id && f.receiverId === myId))
+      );
+      return {
+        ...friend,
+        friendshipId: rel?.id || null,
+      };
+    });
+
     // Fetch details for incoming requests
     const incomingRequesterIds = incomingRequests.map((r) => r.requesterId);
     const incomingDetails = await prisma.portalStudent.findMany({
@@ -167,7 +180,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({
-      friends: friendsDetails,
+      friends,
       incoming,
       outgoing,
     });

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getPortalSession } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getPortalSession();
+    if (!session || session.role !== "student") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { prompt } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
@@ -12,6 +19,16 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json({ error: "Image service not configured" }, { status: 503 });
     }
+
+    // Save the user's imagine message
+    await prisma.aiChatMessage.create({
+      data: {
+        studentId: session.userId,
+        role: "user",
+        type: "text",
+        content: `/imagine ${prompt.trim()}`,
+      },
+    });
 
     const response = await fetch(
       "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev",
@@ -42,6 +59,17 @@ export async function POST(req: NextRequest) {
     if (!base64) {
       return NextResponse.json({ error: "No image returned" }, { status: 502 });
     }
+
+    // Save the assistant's generated image response
+    await prisma.aiChatMessage.create({
+      data: {
+        studentId: session.userId,
+        role: "assistant",
+        type: "image",
+        content: base64,
+        imagePrompt: prompt.trim(),
+      },
+    });
 
     return NextResponse.json({ base64 });
   } catch (e) {
