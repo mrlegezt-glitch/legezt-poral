@@ -302,7 +302,7 @@ export default function AiStudioPage() {
   }, [messages, activeChatId]);
 
   /* ─── Switch to a history chat ─── */
-  const switchToChat = (chatId: string) => {
+  const switchToChat = useCallback((chatId: string) => {
     // Save current before switching
     if (messages.length > 0 && activeChatId) {
       setChatHistory(prev => prev.map(c => c.id === activeChatId ? { ...c, messages } : c));
@@ -314,7 +314,16 @@ export default function AiStudioPage() {
     }
     // Close sidebar on mobile
     if (window.innerWidth <= 768) setSidebarOpen(false);
-  };
+  }, [messages, activeChatId, chatHistory]);
+
+  /* ─── Auto sync messages into active chat history ─── */
+  useEffect(() => {
+    if (activeChatId && messages.length > 0) {
+      setChatHistory(prev =>
+        prev.map(c => (c.id === activeChatId ? { ...c, messages } : c))
+      );
+    }
+  }, [messages, activeChatId]);
 
   /* ─── Delete a chat from history ─── */
   const deleteChat = (chatId: string, e: React.MouseEvent) => {

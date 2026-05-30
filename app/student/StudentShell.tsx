@@ -180,7 +180,20 @@ export default function StudentShell({ children }: { children: React.ReactNode }
         <div className="sidebar-user">
           <div className="sidebar-user-info">
             <div className="sidebar-avatar">
-              {student.fullName.charAt(0).toUpperCase()}
+              {student.profilePhotoUrl ? (
+                <img
+                  src={student.profilePhotoUrl}
+                  alt={student.fullName}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    objectFit: "cover"
+                  }}
+                />
+              ) : (
+                student.fullName.charAt(0).toUpperCase()
+              )}
               <div
                 style={{
                   position: "absolute",

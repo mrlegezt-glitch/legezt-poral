@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { generateSasUrl } from "@/lib/azure-blob";
 
 // GET: List friends/requests OR Search classmates
 export async function GET(req: NextRequest) {
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
           email: true,
           year: true,
           branch: true,
+          profilePhotoUrl: true,
         },
         take: 15,
       });
@@ -73,6 +75,7 @@ export async function GET(req: NextRequest) {
 
         return {
           ...stu,
+          profilePhotoUrl: stu.profilePhotoUrl ? generateSasUrl(stu.profilePhotoUrl, 120) : null,
           friendshipStatus,
           friendshipId,
         };
@@ -117,6 +120,7 @@ export async function GET(req: NextRequest) {
         email: true,
         year: true,
         branch: true,
+        profilePhotoUrl: true,
       },
     });
 
@@ -129,6 +133,7 @@ export async function GET(req: NextRequest) {
       );
       return {
         ...friend,
+        profilePhotoUrl: friend.profilePhotoUrl ? generateSasUrl(friend.profilePhotoUrl, 120) : null,
         friendshipId: rel?.id || null,
       };
     });
@@ -144,6 +149,7 @@ export async function GET(req: NextRequest) {
         email: true,
         year: true,
         branch: true,
+        profilePhotoUrl: true,
       },
     });
 
@@ -152,7 +158,12 @@ export async function GET(req: NextRequest) {
       return {
         id: r.id,
         createdAt: r.createdAt,
-        sender: detail || { id: r.requesterId, fullName: "Classmate", username: "classmate" },
+        sender: detail
+          ? {
+              ...detail,
+              profilePhotoUrl: detail.profilePhotoUrl ? generateSasUrl(detail.profilePhotoUrl, 120) : null,
+            }
+          : { id: r.requesterId, fullName: "Classmate", username: "classmate" },
       };
     });
 
@@ -167,6 +178,7 @@ export async function GET(req: NextRequest) {
         email: true,
         year: true,
         branch: true,
+        profilePhotoUrl: true,
       },
     });
 
@@ -175,7 +187,12 @@ export async function GET(req: NextRequest) {
       return {
         id: r.id,
         createdAt: r.createdAt,
-        receiver: detail || { id: r.receiverId, fullName: "Classmate", username: "classmate" },
+        receiver: detail
+          ? {
+              ...detail,
+              profilePhotoUrl: detail.profilePhotoUrl ? generateSasUrl(detail.profilePhotoUrl, 120) : null,
+            }
+          : { id: r.receiverId, fullName: "Classmate", username: "classmate" },
       };
     });
 

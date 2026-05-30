@@ -21,8 +21,8 @@ type Msg = {
   } | null;
 };
 
-type Faculty = { id: string; fullName: string; designation: string; department: string; };
-type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; friendshipId?: string | null; };
+type Faculty = { id: string; fullName: string; designation: string; department: string; profilePhotoUrl?: string | null; };
+type Student = { id: string; fullName: string; username: string; email: string; year: number; branch: string; friendshipId?: string | null; profilePhotoUrl?: string | null; };
 type FriendSearchResult = Student & { friendshipStatus: string; friendshipId: string | null; };
 type FriendshipRequest = { id: string; createdAt: string; sender?: Student; receiver?: Student; };
 
@@ -47,8 +47,7 @@ export default function StudentMessagesPage() {
   const [incomingRequests, setIncomingRequests] = useState<FriendshipRequest[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<FriendshipRequest[]>([]);
   
-  // Active Chat State
-  const [activeChat, setActiveChat] = useState<{ id: string; name: string; type: "faculty" | "student" } | null>(null);
+  const [activeChat, setActiveChat] = useState<{ id: string; name: string; type: "faculty" | "student"; profilePhotoUrl?: string | null } | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [quotedMsg, setQuotedMsg] = useState<Msg | null>(null);
@@ -360,31 +359,41 @@ export default function StudentMessagesPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    padding: "10px 8px",
-                    borderRadius: "8px",
-                    borderBottom: "1px solid #f1f5f9",
-                    background: "#fff"
+                    padding: "10px 12px",
+                    borderRadius: "12px",
+                    borderBottom: "1px solid var(--border-muted)",
+                    background: "var(--bg-hover)",
+                    marginBottom: "6px"
                   }}>
-                    <div>
-                      <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "#1e293b" }}>{stu.fullName}</div>
-                      <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{stu.branch} · Year {stu.year}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {stu.profilePhotoUrl ? (
+                        <img src={stu.profilePhotoUrl} alt={stu.fullName} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                          {stu.fullName[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--text-primary)" }}>{stu.fullName}</div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>{stu.branch} · Year {stu.year}</div>
+                      </div>
                     </div>
                     {stu.friendshipStatus === "NONE" && (
                       <button 
                         onClick={() => sendFriendRequest(stu.id)}
-                        style={{ padding: "4px 10px", fontSize: "0.75rem", background: "#0f766e", color: "white", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "bold" }}
+                        style={{ padding: "6px 12px", fontSize: "0.75rem", background: "linear-gradient(135deg, #4f46e5, #6366f1)", color: "white", border: "none", borderRadius: "14px", cursor: "pointer", fontWeight: "bold" }}
                       >
                         Add Friend
                       </button>
                     )}
                     {stu.friendshipStatus === "PENDING_SENT" && (
-                      <span style={{ fontSize: "0.75rem", color: "#f59e0b", background: "#fef3c7", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Sent</span>
+                      <span style={{ fontSize: "0.75rem", color: "#f59e0b", background: "rgba(245, 158, 11, 0.15)", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Sent</span>
                     )}
                     {stu.friendshipStatus === "PENDING_RECEIVED" && (
-                      <span style={{ fontSize: "0.75rem", color: "#0f766e", background: "#ccfbf1", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Pending Accept</span>
+                      <span style={{ fontSize: "0.75rem", color: "#38bdf8", background: "rgba(56, 189, 248, 0.15)", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Pending</span>
                     )}
                     {stu.friendshipStatus === "ACCEPTED" && (
-                      <span style={{ fontSize: "0.75rem", color: "#10b981", background: "#d1fae5", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Friends</span>
+                      <span style={{ fontSize: "0.75rem", color: "#10b981", background: "rgba(16, 185, 129, 0.15)", padding: "4px 8px", borderRadius: "10px", fontWeight: "500" }}>Friends</span>
                     )}
                   </div>
                 ))}
@@ -398,7 +407,7 @@ export default function StudentMessagesPage() {
                     {/* Faculty Mentor */}
                     {assignedFaculty && (
                       <div 
-                        onClick={() => setActiveChat({ id: assignedFaculty.id, name: assignedFaculty.fullName, type: "faculty" })}
+                        onClick={() => setActiveChat({ id: assignedFaculty.id, name: assignedFaculty.fullName, type: "faculty", profilePhotoUrl: assignedFaculty.profilePhotoUrl })}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -410,9 +419,13 @@ export default function StudentMessagesPage() {
                           transition: "all 0.2s"
                         }}
                       >
-                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#0f766e", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-                        </div>
+                        {assignedFaculty.profilePhotoUrl ? (
+                          <img src={assignedFaculty.profilePhotoUrl} alt={assignedFaculty.fullName} style={{ width: "44px", height: "44px", borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#0f766e", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                          </div>
+                        )}
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <span style={{ fontSize: "0.875rem", fontWeight: "700", color: "var(--text-primary)" }}>{assignedFaculty.fullName}</span>
@@ -437,7 +450,7 @@ export default function StudentMessagesPage() {
                     {friends.map((friend) => (
                       <div 
                         key={friend.id}
-                        onClick={() => setActiveChat({ id: friend.id, name: friend.fullName, type: "student" })}
+                        onClick={() => setActiveChat({ id: friend.id, name: friend.fullName, type: "student", profilePhotoUrl: friend.profilePhotoUrl })}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -450,9 +463,13 @@ export default function StudentMessagesPage() {
                           marginBottom: "4px"
                         }}
                       >
-                        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
-                          {friend.fullName[0].toUpperCase()}
-                        </div>
+                        {friend.profilePhotoUrl ? (
+                          <img src={friend.profilePhotoUrl} alt={friend.fullName} style={{ width: "44px", height: "44px", borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "1.1rem" }}>
+                            {friend.fullName[0].toUpperCase()}
+                          </div>
+                        )}
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <span style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--text-primary)" }}>{friend.fullName}</span>
@@ -468,7 +485,7 @@ export default function StudentMessagesPage() {
                 {activeTab === "friends" && (
                   <div style={{ padding: "8px" }}>
                     {friends.length === 0 && (
-                      <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                      <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
                         <div style={{ fontSize: "0.875rem" }}>Your friends list is currently empty.</div>
                       </div>
                     )}
@@ -478,18 +495,22 @@ export default function StudentMessagesPage() {
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "10px 12px",
-                        background: "white",
-                        borderRadius: "10px",
+                        background: "var(--bg-panel)",
+                        borderRadius: "12px",
                         marginBottom: "6px",
-                        border: "1px solid #f1f5f9"
+                        border: "1px solid var(--border-muted)"
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
-                            {friend.fullName[0]}
-                          </div>
+                          {friend.profilePhotoUrl ? (
+                            <img src={friend.profilePhotoUrl} alt={friend.fullName} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                              {friend.fullName[0].toUpperCase()}
+                            </div>
+                          )}
                           <div>
-                            <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{friend.fullName}</div>
-                            <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{friend.branch} · Year {friend.year}</div>
+                            <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--text-primary)" }}>{friend.fullName}</div>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>{friend.branch} · Year {friend.year}</div>
                           </div>
                         </div>
                         <button 
@@ -513,11 +534,11 @@ export default function StudentMessagesPage() {
                 {activeTab === "requests" && (
                   <div style={{ padding: "12px" }}>
                     {/* Incoming requests */}
-                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px", fontWeight: "bold" }}>
+                    <h4 style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px", fontWeight: "bold" }}>
                       Received Requests ({incomingRequests.length})
                     </h4>
                     {incomingRequests.length === 0 && (
-                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px", marginBottom: "16px" }}>No pending requests.</div>
+                      <div style={{ fontSize: "0.825rem", color: "var(--text-muted)", paddingLeft: "4px", marginBottom: "16px" }}>No pending requests.</div>
                     )}
                     {incomingRequests.map((req) => (
                       <div key={req.id} style={{
@@ -525,24 +546,34 @@ export default function StudentMessagesPage() {
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "10px",
-                        background: "#f8fafc",
-                        borderRadius: "8px",
-                        marginBottom: "8px"
+                        background: "var(--bg-panel)",
+                        borderRadius: "12px",
+                        marginBottom: "8px",
+                        border: "1px solid var(--border-muted)"
                       }}>
-                        <div>
-                          <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{req.sender?.fullName}</div>
-                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.sender?.branch} · Year {req.sender?.year}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          {req.sender?.profilePhotoUrl ? (
+                            <img src={req.sender.profilePhotoUrl} alt={req.sender.fullName} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                              {req.sender?.fullName ? req.sender.fullName[0].toUpperCase() : "C"}
+                            </div>
+                          )}
+                          <div>
+                            <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--text-primary)" }}>{req.sender?.fullName}</div>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>{req.sender?.branch} · Year {req.sender?.year}</div>
+                          </div>
                         </div>
                         <div style={{ display: "flex", gap: "6px" }}>
                           <button 
                             onClick={() => handleRequest(req.id, "ACCEPTED")}
-                            style={{ padding: "4px 8px", background: "#10b981", color: "white", border: "none", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer", fontWeight: "bold" }}
+                            style={{ padding: "6px 12px", background: "#10b981", color: "white", border: "none", borderRadius: "8px", fontSize: "0.7rem", cursor: "pointer", fontWeight: "bold" }}
                           >
                             Accept
                           </button>
                           <button 
                             onClick={() => handleRequest(req.id, "REJECTED")}
-                            style={{ padding: "4px 8px", background: "#ef4444", color: "white", border: "none", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer", fontWeight: "bold" }}
+                            style={{ padding: "6px 12px", background: "#ef4444", color: "white", border: "none", borderRadius: "8px", fontSize: "0.7rem", cursor: "pointer", fontWeight: "bold" }}
                           >
                             Reject
                           </button>
@@ -550,14 +581,14 @@ export default function StudentMessagesPage() {
                       </div>
                     ))}
 
-                    <div style={{ height: "1px", background: "#e2e8f0", margin: "16px 0" }} />
+                    <div style={{ height: "1px", background: "var(--border-muted)", margin: "16px 0" }} />
 
                     {/* Outgoing requests */}
-                    <h4 style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px", fontWeight: "bold" }}>
+                    <h4 style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase", paddingLeft: "4px", marginBottom: "8px", fontWeight: "bold" }}>
                       Sent Requests ({outgoingRequests.length})
                     </h4>
                     {outgoingRequests.length === 0 && (
-                      <div style={{ fontSize: "0.825rem", color: "#94a3b8", paddingLeft: "4px" }}>No outgoing pending requests.</div>
+                      <div style={{ fontSize: "0.825rem", color: "var(--text-muted)", paddingLeft: "4px" }}>No outgoing pending requests.</div>
                     )}
                     {outgoingRequests.map((req) => (
                       <div key={req.id} style={{
@@ -565,17 +596,27 @@ export default function StudentMessagesPage() {
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "10px",
-                        background: "#f8fafc",
-                        borderRadius: "8px",
-                        marginBottom: "8px"
+                        background: "var(--bg-panel)",
+                        borderRadius: "12px",
+                        marginBottom: "8px",
+                        border: "1px solid var(--border-muted)"
                       }}>
-                        <div>
-                          <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>{req.receiver?.fullName}</div>
-                          <div style={{ fontSize: "0.7rem", color: "#64748b" }}>{req.receiver?.branch} · Year {req.receiver?.year}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          {req.receiver?.profilePhotoUrl ? (
+                            <img src={req.receiver.profilePhotoUrl} alt={req.receiver.fullName} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                              {req.receiver?.fullName ? req.receiver.fullName[0].toUpperCase() : "C"}
+                            </div>
+                          )}
+                          <div>
+                            <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "var(--text-primary)" }}>{req.receiver?.fullName}</div>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>{req.receiver?.branch} · Year {req.receiver?.year}</div>
+                          </div>
                         </div>
                         <button 
                           onClick={() => removeFriendship(req.id)}
-                          style={{ padding: "4px 8px", background: "none", border: "1px solid #cbd5e1", color: "#64748b", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer" }}
+                          style={{ padding: "6px 12px", background: "none", border: "1px solid var(--border-muted)", color: "var(--text-secondary)", borderRadius: "8px", fontSize: "0.7rem", cursor: "pointer" }}
                         >
                           Cancel
                         </button>
@@ -601,11 +642,15 @@ export default function StudentMessagesPage() {
                 gap: "12px",
                 boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
               }}>
-                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: activeChat.type === "faculty" ? "#0f766e" : "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
-                  {activeChat.type === "faculty" ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
-                  ) : activeChat.name[0].toUpperCase()}
-                </div>
+                {activeChat.profilePhotoUrl ? (
+                  <img src={activeChat.profilePhotoUrl} alt={activeChat.name} style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} />
+                ) : (
+                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: activeChat.type === "faculty" ? "#0f766e" : "linear-gradient(135deg, #3b82f6, #6366f1)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+                    {activeChat.type === "faculty" ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                    ) : activeChat.name[0].toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "var(--text-primary)" }}>{activeChat.name}</div>
                   <div style={{ fontSize: "0.75rem", color: "#6366f1", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
