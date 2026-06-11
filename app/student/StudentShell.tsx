@@ -165,8 +165,8 @@ export default function StudentShell({ children }: { children: React.ReactNode }
     <div className="portal-shell">
       {mobileOpen && <div className="portal-mobile-overlay" onClick={() => setMobileOpen(false)} />}
       <aside className={`portal-sidebar student ${mobileOpen ? 'mobile-open' : ''}`}>
-        <div className="sidebar-logo" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <img src="/logo.png" alt="Portal Logo" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
+        <div className="sidebar-logo" style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "1.35rem" }}>
+          <img src="/logo.png" alt="Portal Logo" style={{ width: "42px", height: "42px", borderRadius: "50%" }} />
           LIET PORTAL
         </div>
         <nav className="sidebar-nav">
@@ -236,8 +236,16 @@ export default function StudentShell({ children }: { children: React.ReactNode }
             }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-              <line x1="12" y1="18" x2="12.01" y2="18"/>
+              <path d="M12 2a5 5 0 0 1 5 5v5H7V7a5 5 0 0 1 5-5z" />
+              <circle cx="9.5" cy="6.5" r="0.5" fill="currentColor" />
+              <circle cx="14.5" cy="6.5" r="0.5" fill="currentColor" />
+              <line x1="9" y1="2.5" x2="7.5" y2="1" />
+              <line x1="15" y1="2.5" x2="16.5" y2="1" />
+              <rect x="7" y="13" width="10" height="7" rx="1" />
+              <rect x="4.5" y="13" width="1.5" height="5" rx="0.75" />
+              <rect x="18" y="13" width="1.5" height="5" rx="0.75" />
+              <rect x="9.5" y="20.5" width="1.5" height="2.5" rx="0.75" />
+              <rect x="13" y="20.5" width="1.5" height="2.5" rx="0.75" />
             </svg>
             <span>Install Student App</span>
           </a>
